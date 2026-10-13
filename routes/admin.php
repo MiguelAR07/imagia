@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\PipelineStageController;
 use App\Http\Controllers\Admin\PortfolioController;
 use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Admin\ProjectPartsController;
+use App\Http\Controllers\Admin\QuoteController;
 use App\Http\Controllers\Admin\TaskController;
 use App\Http\Controllers\Admin\UserController;
 use App\Support\Permissions;
@@ -159,6 +160,25 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
             Route::put('preguntas/orden', [FaqController::class, 'reorder'])->name('faqs.reorder');
             Route::put('preguntas/{faq}', [FaqController::class, 'update'])->name('faqs.update');
             Route::delete('preguntas/{faq}', [FaqController::class, 'destroy'])->name('faqs.destroy');
+        });
+
+        /* Cotizaciones */
+        Route::middleware('permission:cotizaciones.gestionar')->prefix('cotizaciones')->name('admin.quotes.')->group(function () {
+            Route::get('/', [QuoteController::class, 'index'])->name('index');
+            Route::get('nueva', [QuoteController::class, 'create'])->name('create');
+            Route::post('/', [QuoteController::class, 'store'])->name('store');
+            Route::post('impuestos', [QuoteController::class, 'storeTaxRate'])->name('taxes.store');
+            Route::put('impuestos/{taxRate}', [QuoteController::class, 'updateTaxRate'])->name('taxes.update');
+            Route::delete('impuestos/{taxRate}', [QuoteController::class, 'destroyTaxRate'])->name('taxes.destroy');
+            Route::get('{quote}', [QuoteController::class, 'show'])->name('show');
+            Route::get('{quote}/editar', [QuoteController::class, 'edit'])->name('edit');
+            Route::get('{quote}/imprimir', [QuoteController::class, 'print'])->name('print');
+            Route::put('{quote}', [QuoteController::class, 'update'])->name('update');
+            Route::patch('{quote}/estado', [QuoteController::class, 'updateStatus'])->name('status');
+            Route::post('{quote}/duplicar', [QuoteController::class, 'duplicate'])->name('duplicate');
+            Route::post('{quote}/proyecto', [QuoteController::class, 'createProject'])
+                ->middleware('permission:proyectos.gestionar')->name('project');
+            Route::delete('{quote}', [QuoteController::class, 'destroy'])->name('destroy');
         });
 
         /* Portafolio */

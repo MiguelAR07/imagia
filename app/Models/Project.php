@@ -32,7 +32,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $observations
  */
 #[Fillable([
-    'client_id', 'name', 'description', 'category', 'status', 'priority', 'start_date', 'due_date',
+    'client_id', 'quote_id', 'name', 'description', 'category', 'status', 'priority', 'start_date', 'due_date',
     'agreed_amount', 'currency', 'progress_mode', 'manual_progress', 'observations',
 ])]
 class Project extends Model
@@ -90,6 +90,14 @@ class Project extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class)->withTrashed();
+    }
+
+    /**
+     * @return BelongsTo<Quote, $this>
+     */
+    public function quote(): BelongsTo
+    {
+        return $this->belongsTo(Quote::class)->withTrashed();
     }
 
     /**

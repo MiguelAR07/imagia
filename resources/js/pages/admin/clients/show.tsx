@@ -2,6 +2,7 @@ import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/react';
 import {
     Archive,
     ArchiveRestore,
+    FileText,
     Globe,
     Mail,
     MessageCircle,
@@ -35,6 +36,7 @@ import { formatDate } from '@/lib/format';
 import { PROJECT_STATUS_TONE } from '@/lib/project-labels';
 import { destroy, index, restore, show } from '@/routes/admin/clients';
 import { show as showProject } from '@/routes/admin/projects';
+import { create as createQuote } from '@/routes/admin/quotes';
 import {
     destroy as destroyContact,
     store as storeContact,
@@ -119,6 +121,16 @@ export default function ClientShow({
                         canManage &&
                         !client.archived && (
                             <>
+                                {can('cotizaciones.gestionar') && (
+                                    <Button variant="outline" asChild>
+                                        <Link
+                                            href={`${createQuote().url}?client=${client.id}`}
+                                        >
+                                            <FileText className="size-4" />
+                                            Nueva cotización
+                                        </Link>
+                                    </Button>
+                                )}
                                 <Button
                                     variant="outline"
                                     onClick={() => setEditing(true)}

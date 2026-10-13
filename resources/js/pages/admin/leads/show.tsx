@@ -2,6 +2,7 @@ import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import {
     Archive,
     Building2,
+    FileText,
     CalendarClock,
     Mail,
     Pencil,
@@ -24,6 +25,7 @@ import { stageDot } from '@/lib/stage-colors';
 import { cn } from '@/lib/utils';
 import { show as showClient } from '@/routes/admin/clients';
 import { convert, destroy, index, move, show } from '@/routes/admin/leads';
+import { create as createQuote } from '@/routes/admin/quotes';
 import type { ActivityItem, LeadDetail, Option, Stage } from '@/types';
 
 type Props = {
@@ -117,6 +119,16 @@ export default function LeadShow({ lead, stages, activities, options }: Props) {
                                             }
                                         />
                                     )
+                                )}
+                                {can('cotizaciones.gestionar') && (
+                                    <Button variant="outline" asChild>
+                                        <Link
+                                            href={`${createQuote().url}?${lead.client ? `client=${lead.client.id}` : `lead=${lead.id}`}`}
+                                        >
+                                            <FileText className="size-4" />
+                                            Nueva cotización
+                                        </Link>
+                                    </Button>
                                 )}
                                 <Button
                                     variant="outline"
