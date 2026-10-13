@@ -11,4 +11,6 @@ export type NavItem = {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon | null;
     isActive?: boolean;
+    /** Marca el elemento como activo también en sus subpáginas. */
+    matchChildren?: boolean;
 };

@@ -73,7 +73,7 @@ return [
     |
     */
 
-    'home' => '/dashboard',
+    'home' => '/admin',
 
     /*
     |--------------------------------------------------------------------------
@@ -161,7 +161,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Sin registro público: el panel es privado. Las cuentas las crea un administrador.
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([

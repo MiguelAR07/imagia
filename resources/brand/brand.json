@@ -1,0 +1,80 @@
+{
+    "nombre": "IMAGIA",
+    "origen": [
+        { "parte": "Imagina", "significado": "lo que el cliente trae" },
+        { "parte": "Magia", "significado": "lo que nosotros hacemos" },
+        { "parte": "IA", "significado": "inteligencia artificial" }
+    ],
+    "siglas": [
+        {
+            "letra": "I",
+            "palabra": "Innovación",
+            "descripcion": "Ideas nuevas convertidas en productos que generan valor."
+        },
+        {
+            "letra": "M",
+            "palabra": "Movilidad",
+            "descripcion": "Apps para celular y soluciones que van con el cliente."
+        },
+        {
+            "letra": "A",
+            "palabra": "Automatización",
+            "descripcion": "Procesos que funcionan solos, sin tareas repetitivas."
+        },
+        {
+            "letra": "G",
+            "palabra": "Gestión",
+            "descripcion": "Sistemas y paneles para administrar el negocio."
+        },
+        {
+            "letra": "I",
+            "palabra": "Inteligencia",
+            "descripcion": "IA aplicada a decisiones, atención y análisis."
+        },
+        {
+            "letra": "A",
+            "palabra": "Aplicaciones web",
+            "descripcion": "Webs, landing pages y plataformas a la medida."
+        }
+    ],
+    "lema": "Tú lo imaginas. Nosotros hacemos la magia.",
+    "descriptor": "Software · Apps · Automatización",
+    "logo": {
+        "concepto": "Enlace",
+        "partes": [
+            {
+                "forma": "Cuadrado redondeado",
+                "representa": "Pantallas: webs y apps"
+            },
+            {
+                "forma": "Círculo con un punto que lo recorre",
+                "representa": "Automatización: procesos que funcionan solos"
+            },
+            {
+                "forma": "Ambas piezas entrelazadas",
+                "representa": "Lo que se ve y lo que trabaja por detrás forman un solo sistema"
+            }
+        ]
+    },
+    "colores": {
+        "grafito": "#0A0C11",
+        "noche": "#06070B",
+        "superficie": "#11141B",
+        "linea": "#252A35",
+        "texto": "#ECEEF3",
+        "texto_secundario": "#9097A6",
+        "azul": "#3B5BFF",
+        "cian": "#22D3EE",
+        "azul_sobre_claro": "#2643E6",
+        "cian_sobre_claro": "#0BA5C2",
+        "papel": "#F4F5F8",
+        "exito": "#3CCB8C",
+        "atencion": "#F2B544",
+        "critico": "#F06A6A"
+    },
+    "tipografias": {
+        "titulos": "Schibsted Grotesk",
+        "texto": "Instrument Sans",
+        "datos": "JetBrains Mono"
+    }
+}

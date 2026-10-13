@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Favicon e ícono de app: isotipo sobre baldosa grafito. Trazos más gruesos para leerse a 16 px -->
+  <defs>
+    <linearGradient id="fa" gradientUnits="userSpaceOnUse" x1="8" y1="46" x2="34" y2="20"><stop offset="0" stop-color="#3B5BFF"/><stop offset="1" stop-color="#22D3EE"/></linearGradient>
+    <linearGradient id="fb" gradientUnits="userSpaceOnUse" x1="28" y1="20" x2="56" y2="46"><stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#3B5BFF"/></linearGradient>
+    <mask id="fc" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">
+      <rect width="64" height="64" fill="#fff"/>
+      <path d="M38.8 45.6 A13 13 0 0 1 31.6 41.6" fill="none" stroke="#000" stroke-width="12"/>
+    </mask>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="#0A0C11"/>
+  <path d="M41 20 A13 13 0 0 1 41 46 A13 13 0 0 1 41 20" fill="none" stroke="url(#fb)" stroke-width="7"/>
+  <rect x="9" y="20" width="26" height="26" rx="8" fill="none" stroke="url(#fa)" stroke-width="7" mask="url(#fc)"/>
+</svg>

@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { ExternalLink, LayoutGrid, Settings2, Users } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -13,31 +13,42 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { useCan } from '@/hooks/use-can';
+import { dashboard, home } from '@/routes';
+import { index as usersIndex } from '@/routes/admin/users';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
-
+/*
+ * Los módulos se agregan aquí a medida que se construyen (clientes, prospectos,
+ * proyectos, cotizaciones…). No se muestran accesos a pantallas que aún no existen.
+ */
 export function AppSidebar() {
+    const can = useCan();
+
+    const mainNavItems: NavItem[] = [
+        { title: 'Inicio', href: dashboard(), icon: LayoutGrid },
+    ];
+
+    const systemNavItems: NavItem[] = [
+        ...(can('usuarios.gestionar')
+            ? [{ title: 'Usuarios', href: usersIndex(), icon: Users }]
+            : []),
+        ...(can('configuracion.gestionar')
+            ? [
+                  {
+                      title: 'Configuración',
+                      href: '/admin/configuracion',
+                      icon: Settings2,
+                      matchChildren: true,
+                  },
+              ]
+            : []),
+    ];
+
+    const footerNavItems: NavItem[] = [
+        { title: 'Ver sitio público', href: home(), icon: ExternalLink },
+    ];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -53,7 +64,8 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={mainNavItems} label="Panel" />
+                <NavMain items={systemNavItems} label="Sistema" />
             </SidebarContent>
 
             <SidebarFooter>

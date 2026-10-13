@@ -12,6 +12,16 @@
         'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
+    --font-display:
+        'Schibsted Grotesk', 'Instrument Sans', ui-sans-serif, system-ui,
+        sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+
+    /* Colores de marca IMAGIA (ver resources/brand/brand.json) */
+    --color-brand-blue: var(--brand-blue);
+    --color-brand-cyan: var(--brand-cyan);
+    --color-success: var(--success);
+    --color-warning: var(--warning);
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -61,75 +71,85 @@
     --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Tema claro: papel #F4F5F8, tinta #0E1118, azul de marca ajustado para contraste sobre claro */
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.87 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
+    --background: #f4f5f8;
+    --foreground: #0e1118;
+    --card: #ffffff;
+    --card-foreground: #0e1118;
+    --popover: #ffffff;
+    --popover-foreground: #0e1118;
+    --primary: #2643e6;
+    --primary-foreground: #ffffff;
+    --secondary: #e8eaf0;
+    --secondary-foreground: #0e1118;
+    --muted: #eceef3;
+    --muted-foreground: #5d6472;
+    --accent: #e6eaff;
+    --accent-foreground: #1b2fa8;
+    --destructive: #d64545;
+    --destructive-foreground: #d64545;
+    --border: #dfe2e9;
+    --input: #d5d9e2;
+    --ring: #3b5bff;
+    --chart-1: #2643e6;
+    --chart-2: #0ba5c2;
+    --chart-3: #2fa874;
+    --chart-4: #d99a1e;
+    --chart-5: #8a93a6;
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.87 0 0);
+    --sidebar: #ffffff;
+    --sidebar-foreground: #0e1118;
+    --sidebar-primary: #2643e6;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #eceef3;
+    --sidebar-accent-foreground: #0e1118;
+    --sidebar-border: #e3e6ec;
+    --sidebar-ring: #3b5bff;
+    --brand-blue: #2643e6;
+    --brand-cyan: #0ba5c2;
+    --success: #2fa874;
+    --warning: #c98a12;
 }
 
+/* Tema oscuro: grafito #0A0C11 con superficies #11141B y acento azul → cian */
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
+    --background: #0a0c11;
+    --foreground: #eceef3;
+    --card: #11141b;
+    --card-foreground: #eceef3;
+    --popover: #11141b;
+    --popover-foreground: #eceef3;
+    --primary: #3b5bff;
+    --primary-foreground: #ffffff;
+    --secondary: #171b24;
+    --secondary-foreground: #eceef3;
+    --muted: #171b24;
+    --muted-foreground: #9097a6;
+    --accent: #1a2140;
+    --accent-foreground: #c9d3ff;
+    --destructive: #b83a3a;
+    --destructive-foreground: #f06a6a;
+    --border: #252a35;
+    --input: #2a303c;
+    --ring: #5b7cff;
+    --chart-1: #5b7cff;
+    --chart-2: #22d3ee;
+    --chart-3: #3ccb8c;
+    --chart-4: #f2b544;
+    --chart-5: #9097a6;
+    --sidebar: #0d1016;
+    --sidebar-foreground: #eceef3;
+    --sidebar-primary: #3b5bff;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #171b24;
+    --sidebar-accent-foreground: #eceef3;
+    --sidebar-border: #1c2029;
+    --sidebar-ring: #5b7cff;
+    --brand-blue: #3b5bff;
+    --brand-cyan: #22d3ee;
+    --success: #3ccb8c;
+    --warning: #f2b544;
 }
 
 @layer base {
@@ -139,5 +159,49 @@
 
     body {
         @apply bg-background text-foreground;
+    }
+
+    h1,
+    h2,
+    h3 {
+        @apply font-display tracking-tight text-balance;
+    }
+}
+
+@layer components {
+    /* Texto con el degradado de marca: se usa en la terminación «IA» de IMAGIA */
+    .text-brand-gradient {
+        background: linear-gradient(
+            100deg,
+            var(--brand-blue),
+            var(--brand-cyan)
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+}
+
+/* Luz que recorre la pantalla del isotipo animado */
+.logo-pulse {
+    animation: logo-run 2.6s linear infinite;
+}
+
+@keyframes logo-run {
+    from {
+        stroke-dashoffset: 1;
+    }
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
