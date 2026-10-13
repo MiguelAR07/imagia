@@ -4,6 +4,7 @@ import {
     ExternalLink,
     LayoutGrid,
     Settings2,
+    Target,
     Users,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -22,6 +23,7 @@ import {
 import { useCan } from '@/hooks/use-can';
 import { dashboard, home } from '@/routes';
 import { index as clientsIndex } from '@/routes/admin/clients';
+import { index as leadsIndex } from '@/routes/admin/leads';
 import { index as usersIndex } from '@/routes/admin/users';
 import type { NavItem } from '@/types';
 
@@ -36,16 +38,28 @@ export function AppSidebar() {
         { title: 'Inicio', href: dashboard(), icon: LayoutGrid },
     ];
 
-    const commercialNavItems: NavItem[] = can('clientes.ver')
-        ? [
-              {
-                  title: 'Clientes',
-                  href: clientsIndex(),
-                  icon: Building2,
-                  matchChildren: true,
-              },
-          ]
-        : [];
+    const commercialNavItems: NavItem[] = [
+        ...(can('prospectos.gestionar')
+            ? [
+                  {
+                      title: 'Prospectos',
+                      href: leadsIndex(),
+                      icon: Target,
+                      matchChildren: true,
+                  },
+              ]
+            : []),
+        ...(can('clientes.ver')
+            ? [
+                  {
+                      title: 'Clientes',
+                      href: clientsIndex(),
+                      icon: Building2,
+                      matchChildren: true,
+                  },
+              ]
+            : []),
+    ];
 
     const systemNavItems: NavItem[] = [
         ...(can('usuarios.gestionar')

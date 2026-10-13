@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ActivityRequest;
 use App\Models\Activity;
 use App\Models\Client;
+use App\Models\Lead;
 use App\Support\Permissions;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +25,7 @@ class ActivityController extends Controller
      */
     private const SUBJECTS = [
         'clientes' => [Client::class, 'clientes.gestionar'],
+        'prospectos' => [Lead::class, 'prospectos.gestionar'],
     ];
 
     public function store(ActivityRequest $request, string $subjectType, int $subjectId): RedirectResponse
@@ -37,6 +39,11 @@ class ActivityController extends Controller
             'user_id' => $request->user()->id,
             'happened_at' => $data['happened_at'] ?? now(),
         ]);
+
+        // Una llamada, correo, reunión o WhatsApp cuenta como último contacto con el prospecto.
+        if ($subject instanceof Lead && $data['type'] !== 'note') {
+            $subject->forceFill(['last_contacted_at' => $data['happened_at'] ?? now()])->save();
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Registro agregado al historial.']);
 

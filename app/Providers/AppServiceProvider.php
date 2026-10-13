@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Client;
+use App\Models\Lead;
 use App\Models\User;
 use App\Support\Permissions;
 use Carbon\CarbonImmutable;
@@ -33,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
         // Nombres cortos y estables para las relaciones polimórficas (historial, archivos, FAQ).
         Relation::morphMap([
             'client' => Client::class,
+            'lead' => Lead::class,
         ]);
 
         // El administrador puede hacer todo; el resto depende de sus permisos.
