@@ -7,6 +7,7 @@ use App\Support\Permissions;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 
 use function Laravel\Prompts\password;
@@ -16,7 +17,8 @@ class CreateAdmin extends Command
 {
     protected $signature = 'imagia:admin
                             {--name= : Nombre completo}
-                            {--email= : Correo con el que iniciará sesión}';
+                            {--email= : Correo con el que iniciará sesión}
+                            {--generar-clave : Genera una contraseña temporal en vez de preguntarla}';
 
     protected $description = 'Crea (o convierte en administrador) la cuenta con acceso total al panel';
 
@@ -45,14 +47,19 @@ class CreateAdmin extends Command
             return self::SUCCESS;
         }
 
-        $plain = password(
-            'Contraseña (mínimo 12 caracteres)',
-            required: true,
-            validate: fn (string $value) => Validator::make(
-                ['password' => $value],
-                ['password' => Password::min(12)->letters()->numbers()],
-            )->errors()->first('password') ?: null,
-        );
+        // Con --generar-clave no se hace ninguna pregunta: útil en terminales donde
+        // la entrada oculta de contraseñas no funciona bien (algunas de Windows).
+        $generated = (bool) $this->option('generar-clave');
+        $plain = $generated
+            ? Str::password(16, symbols: false)
+            : password(
+                'Contraseña (mínimo 12 caracteres)',
+                required: true,
+                validate: fn (string $value) => Validator::make(
+                    ['password' => $value],
+                    ['password' => Password::min(12)->letters()->numbers()],
+                )->errors()->first('password') ?: null,
+            );
 
         $user = User::query()->create([
             'name' => $name,
@@ -64,6 +71,11 @@ class CreateAdmin extends Command
         $user->assignRole(Permissions::ROLE_ADMIN);
 
         $this->components->info('Administrador creado. Inicia sesión en '.url('/login')." con {$email}.");
+
+        if ($generated) {
+            $this->components->twoColumnDetail('Contraseña temporal', $plain);
+            $this->components->warn('Se muestra solo esta vez. Cámbiala en Mi cuenta → Seguridad al entrar.');
+        }
 
         return self::SUCCESS;
     }

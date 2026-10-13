@@ -25,6 +25,17 @@ class CreateAdminCommandTest extends TestCase
         $this->assertTrue(Hash::check('clave-segura-2026', $user->password));
     }
 
+    public function test_it_can_generate_a_temporary_password_without_asking()
+    {
+        $this->artisan('imagia:admin', ['--name' => 'Miguel', '--email' => 'miguel@ejemplo.com', '--generar-clave' => true])
+            ->expectsOutputToContain('Contraseña temporal')
+            ->assertSuccessful();
+
+        $user = User::query()->where('email', 'miguel@ejemplo.com')->firstOrFail();
+        $this->assertTrue($user->hasRole(Permissions::ROLE_ADMIN));
+        $this->assertNotNull($user->email_verified_at);
+    }
+
     public function test_it_promotes_an_existing_user_without_changing_the_password()
     {
         $user = $this->collaborator(['email' => 'ana@ejemplo.com']);
