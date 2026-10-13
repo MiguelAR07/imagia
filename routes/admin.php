@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\BrandSettingsController;
+use App\Http\Controllers\Admin\ClientContactController;
+use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ContactSettingsController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\UserController;
@@ -35,4 +38,30 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
                 ->middleware('throttle:6,1')
                 ->name('admin.users.invite');
         });
+
+        /* Clientes */
+        Route::middleware('permission:clientes.ver')->group(function () {
+            Route::get('clientes', [ClientController::class, 'index'])->name('admin.clients.index');
+            Route::get('clientes/{client}', [ClientController::class, 'show'])->withTrashed()->name('admin.clients.show');
+        });
+
+        Route::middleware('permission:clientes.gestionar')->group(function () {
+            Route::post('clientes', [ClientController::class, 'store'])->name('admin.clients.store');
+            Route::put('clientes/{client}', [ClientController::class, 'update'])->name('admin.clients.update');
+            Route::delete('clientes/{client}', [ClientController::class, 'destroy'])->name('admin.clients.destroy');
+            Route::post('clientes/{client}/restaurar', [ClientController::class, 'restore'])->withTrashed()->name('admin.clients.restore');
+
+            Route::scopeBindings()->group(function () {
+                Route::post('clientes/{client}/contactos', [ClientContactController::class, 'store'])->name('admin.clients.contacts.store');
+                Route::put('clientes/{client}/contactos/{contact}', [ClientContactController::class, 'update'])->name('admin.clients.contacts.update');
+                Route::delete('clientes/{client}/contactos/{contact}', [ClientContactController::class, 'destroy'])->name('admin.clients.contacts.destroy');
+            });
+        });
+
+        /* Historial: notas e interacciones (el permiso depende del registro) */
+        Route::post('{subjectType}/{subjectId}/actividades', [ActivityController::class, 'store'])
+            ->whereIn('subjectType', ['clientes'])
+            ->whereNumber('subjectId')
+            ->name('admin.activities.store');
+        Route::delete('actividades/{activity}', [ActivityController::class, 'destroy'])->name('admin.activities.destroy');
     });

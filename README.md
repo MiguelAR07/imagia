@@ -2,20 +2,20 @@
 
 Plataforma para administrar el negocio de desarrollo de software de IMAGIA: sitio público, panel privado, CRM, proyectos, cotizaciones, finanzas y asistente comercial.
 
-> **IMAGIA** = Imagina + Magia + IA · *Tú lo imaginas. Nosotros hacemos la magia.*
+> **IMAGIA** = Imagina + Magia + IA · _Tú lo imaginas. Nosotros hacemos la magia._
 > **I**nnovación · **M**ovilidad · **A**utomatización · **G**estión · **I**nteligencia · **A**plicaciones web
 
 ## Tecnología
 
-| Capa | Herramienta |
-|---|---|
-| Backend | Laravel 13 · PHP 8.4 |
-| Interfaz | React 19 + TypeScript con Inertia 3 · Tailwind 4 · componentes shadcn/ui |
-| Rutas tipadas | Wayfinder (genera `resources/js/routes` y `resources/js/actions`) |
-| Acceso | Laravel Fortify (login, verificación en dos pasos, llaves de acceso) |
-| Roles y permisos | spatie/laravel-permission |
-| Base de datos | SQLite en desarrollo · MySQL en producción |
-| Pruebas | Pest / PHPUnit |
+| Capa             | Herramienta                                                              |
+| ---------------- | ------------------------------------------------------------------------ |
+| Backend          | Laravel 13 · PHP 8.4                                                     |
+| Interfaz         | React 19 + TypeScript con Inertia 3 · Tailwind 4 · componentes shadcn/ui |
+| Rutas tipadas    | Wayfinder (genera `resources/js/routes` y `resources/js/actions`)        |
+| Acceso           | Laravel Fortify (login, verificación en dos pasos, llaves de acceso)     |
+| Roles y permisos | spatie/laravel-permission                                                |
+| Base de datos    | SQLite en desarrollo · MySQL en producción                               |
+| Pruebas          | Pest / PHPUnit                                                           |
 
 ## Puesta en marcha (Windows con Laravel Herd)
 
@@ -37,16 +37,16 @@ Luego entra a **http://imagia.test/login**.
 
 ## Comandos útiles
 
-| Comando | Para qué |
-|---|---|
-| `npm run dev` | Interfaz con recarga automática |
-| `npm run build` | Compilar la interfaz para producción |
-| `php artisan test` | Ejecutar todas las pruebas |
-| `npx tsc --noEmit` | Revisar tipos de TypeScript |
-| `npm run check:fix` | Formatear y revisar el código de la interfaz |
-| `vendor/bin/pint` | Formatear el código PHP |
+| Comando                    | Para qué                                                                 |
+| -------------------------- | ------------------------------------------------------------------------ |
+| `npm run dev`              | Interfaz con recarga automática                                          |
+| `npm run build`            | Compilar la interfaz para producción                                     |
+| `php artisan test`         | Ejecutar todas las pruebas                                               |
+| `npx tsc --noEmit`         | Revisar tipos de TypeScript                                              |
+| `npm run check:fix`        | Formatear y revisar el código de la interfaz                             |
+| `vendor/bin/pint`          | Formatear el código PHP                                                  |
 | `php artisan imagia:admin` | Crear un administrador o convertir una cuenta existente en administrador |
-| `php artisan db:seed` | Volver a sembrar roles, permisos y datos base (no duplica) |
+| `php artisan db:seed`      | Volver a sembrar roles, permisos y datos base (no duplica)               |
 
 ## Estructura
 
@@ -74,10 +74,10 @@ routes/admin.php                        rutas del panel
 
 ## Roles
 
-| Rol | Puede |
-|---|---|
-| Administrador | Todo |
-| Colaborador | Entrar al panel, ver clientes, gestionar prospectos, proyectos y tareas, ver conversaciones |
+| Rol           | Puede                                                                                       |
+| ------------- | ------------------------------------------------------------------------------------------- |
+| Administrador | Todo                                                                                        |
+| Colaborador   | Entrar al panel, ver clientes, gestionar prospectos, proyectos y tareas, ver conversaciones |
 
 Los permisos de los módulos futuros ya existen en `app/Support/Permissions.php`. Siempre debe quedar al menos un administrador activo.
 

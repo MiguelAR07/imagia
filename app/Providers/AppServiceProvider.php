@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\Client;
 use App\Models\User;
 use App\Support\Permissions;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -27,6 +29,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        // Nombres cortos y estables para las relaciones polimórficas (historial, archivos, FAQ).
+        Relation::morphMap([
+            'client' => Client::class,
+        ]);
 
         // El administrador puede hacer todo; el resto depende de sus permisos.
         Gate::before(fn (User $user) => $user->hasRole(Permissions::ROLE_ADMIN) ? true : null);
