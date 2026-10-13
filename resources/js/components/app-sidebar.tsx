@@ -3,6 +3,7 @@ import {
     Building2,
     ExternalLink,
     FolderKanban,
+    Images,
     LayoutGrid,
     ListChecks,
     Package,
@@ -28,6 +29,7 @@ import { dashboard, home } from '@/routes';
 import { home as catalogHome } from '@/routes/admin/catalog';
 import { index as clientsIndex } from '@/routes/admin/clients';
 import { index as leadsIndex } from '@/routes/admin/leads';
+import { index as portfolioIndex } from '@/routes/admin/portfolio';
 import { index as projectsIndex } from '@/routes/admin/projects';
 import { index as tasksIndex } from '@/routes/admin/tasks';
 import { index as usersIndex } from '@/routes/admin/users';
@@ -89,6 +91,12 @@ export function AppSidebar() {
                   title: 'Catálogo',
                   href: catalogHome(),
                   icon: Package,
+                  matchChildren: true,
+              },
+              {
+                  title: 'Portafolio',
+                  href: portfolioIndex(),
+                  icon: Images,
                   matchChildren: true,
               },
           ]

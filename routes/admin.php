@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ContactSettingsController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\PipelineStageController;
+use App\Http\Controllers\Admin\PortfolioController;
 use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Admin\ProjectPartsController;
 use App\Http\Controllers\Admin\TaskController;
@@ -158,6 +159,22 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
             Route::put('preguntas/orden', [FaqController::class, 'reorder'])->name('faqs.reorder');
             Route::put('preguntas/{faq}', [FaqController::class, 'update'])->name('faqs.update');
             Route::delete('preguntas/{faq}', [FaqController::class, 'destroy'])->name('faqs.destroy');
+        });
+
+        /* Portafolio */
+        Route::middleware('permission:catalogo.gestionar')->prefix('portafolio')->name('admin.portfolio.')->group(function () {
+            Route::get('/', [PortfolioController::class, 'index'])->name('index');
+            Route::get('nuevo', [PortfolioController::class, 'create'])->name('create');
+            Route::post('/', [PortfolioController::class, 'store'])->name('store');
+            Route::get('{item}', [PortfolioController::class, 'edit'])->name('edit');
+            Route::put('{item}', [PortfolioController::class, 'update'])->name('update');
+            Route::patch('{item}/publicacion', [PortfolioController::class, 'publish'])->name('publish');
+            Route::post('{item}/duplicar', [PortfolioController::class, 'duplicate'])->name('duplicate');
+            Route::delete('{item}', [PortfolioController::class, 'destroy'])->name('destroy');
+            Route::post('{item}/restaurar', [PortfolioController::class, 'restore'])->withTrashed()->name('restore');
+            Route::post('{item}/portada', [PortfolioController::class, 'uploadCover'])->middleware('throttle:30,1')->name('cover');
+            Route::post('{item}/imagenes', [PortfolioController::class, 'uploadImages'])->middleware('throttle:30,1')->name('images.store');
+            Route::delete('{item}/imagenes/{image}', [PortfolioController::class, 'destroyImage'])->scopeBindings()->name('images.destroy');
         });
 
         /* Historial: notas e interacciones (el permiso depende del registro) */
