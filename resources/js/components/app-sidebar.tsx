@@ -2,7 +2,9 @@ import { Link } from '@inertiajs/react';
 import {
     Building2,
     ExternalLink,
+    FolderKanban,
     LayoutGrid,
+    ListChecks,
     Settings2,
     Target,
     Users,
@@ -24,6 +26,8 @@ import { useCan } from '@/hooks/use-can';
 import { dashboard, home } from '@/routes';
 import { index as clientsIndex } from '@/routes/admin/clients';
 import { index as leadsIndex } from '@/routes/admin/leads';
+import { index as projectsIndex } from '@/routes/admin/projects';
+import { index as tasksIndex } from '@/routes/admin/tasks';
 import { index as usersIndex } from '@/routes/admin/users';
 import type { NavItem } from '@/types';
 
@@ -58,6 +62,22 @@ export function AppSidebar() {
                       matchChildren: true,
                   },
               ]
+            : []),
+    ];
+
+    const operationNavItems: NavItem[] = [
+        ...(can('proyectos.ver')
+            ? [
+                  {
+                      title: 'Proyectos',
+                      href: projectsIndex(),
+                      icon: FolderKanban,
+                      matchChildren: true,
+                  },
+              ]
+            : []),
+        ...(can('tareas.gestionar')
+            ? [{ title: 'Tareas', href: tasksIndex(), icon: ListChecks }]
             : []),
     ];
 
@@ -98,6 +118,7 @@ export function AppSidebar() {
             <SidebarContent>
                 <NavMain items={mainNavItems} label="Panel" />
                 <NavMain items={commercialNavItems} label="Comercial" />
+                <NavMain items={operationNavItems} label="Operación" />
                 <NavMain items={systemNavItems} label="Sistema" />
             </SidebarContent>
 

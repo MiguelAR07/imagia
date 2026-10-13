@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\ClientRequest;
 use App\Models\Activity;
 use App\Models\Client;
 use App\Models\Contact;
+use App\Models\Project;
 use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -80,6 +81,14 @@ class ClientController extends Controller
                 'archived' => $client->trashed(),
                 'contacts' => $client->contacts->map(fn (Contact $c) => $c->only(['id', 'name', 'role', 'email', 'phone', 'is_primary'])),
             ],
+            'projects' => $client->projects()->latest()->get(['id', 'name', 'status', 'due_date'])
+                ->map(fn (Project $p) => [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'status' => $p->status,
+                    'status_label' => Project::STATUSES[$p->status],
+                    'due_date' => $p->due_date?->toDateString(),
+                ]),
             'activities' => $client->activities()->with('user:id,name')->limit(100)->get()
                 ->map(fn (Activity $a) => $a->toTimelineArray()),
             'options' => [

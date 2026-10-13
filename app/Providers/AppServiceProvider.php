@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Client;
 use App\Models\Lead;
+use App\Models\Project;
 use App\Models\User;
 use App\Support\Permissions;
 use Carbon\CarbonImmutable;
@@ -35,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
         Relation::morphMap([
             'client' => Client::class,
             'lead' => Lead::class,
+            'project' => Project::class,
         ]);
 
         // El administrador puede hacer todo; el resto depende de sus permisos.

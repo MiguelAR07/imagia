@@ -8,6 +8,9 @@ use App\Http\Controllers\Admin\ContactSettingsController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\PipelineStageController;
+use App\Http\Controllers\Admin\ProjectController;
+use App\Http\Controllers\Admin\ProjectPartsController;
+use App\Http\Controllers\Admin\TaskController;
 use App\Http\Controllers\Admin\UserController;
 use App\Support\Permissions;
 use Illuminate\Support\Facades\Route;
@@ -81,9 +84,51 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
             Route::delete('embudo/etapas/{stage}', [PipelineStageController::class, 'destroy'])->name('admin.stages.destroy');
         });
 
+        /* Proyectos */
+        Route::middleware('permission:proyectos.ver')->group(function () {
+            Route::get('proyectos', [ProjectController::class, 'index'])->name('admin.projects.index');
+            Route::get('proyectos/{project}', [ProjectController::class, 'show'])->withTrashed()->name('admin.projects.show');
+            Route::get('proyectos/{project}/archivos/{file}', [ProjectPartsController::class, 'downloadFile'])
+                ->scopeBindings()->name('admin.projects.files.download');
+        });
+
+        Route::middleware('permission:proyectos.gestionar')->group(function () {
+            Route::post('proyectos', [ProjectController::class, 'store'])->name('admin.projects.store');
+            Route::put('proyectos/{project}', [ProjectController::class, 'update'])->name('admin.projects.update');
+            Route::patch('proyectos/{project}/estado', [ProjectController::class, 'updateStatus'])->name('admin.projects.status');
+            Route::delete('proyectos/{project}', [ProjectController::class, 'destroy'])->name('admin.projects.destroy');
+            Route::post('proyectos/{project}/restaurar', [ProjectController::class, 'restore'])->withTrashed()->name('admin.projects.restore');
+
+            Route::scopeBindings()->group(function () {
+                Route::post('proyectos/{project}/hitos', [ProjectPartsController::class, 'storeMilestone'])->name('admin.projects.milestones.store');
+                Route::put('proyectos/{project}/hitos/{milestone}', [ProjectPartsController::class, 'updateMilestone'])->name('admin.projects.milestones.update');
+                Route::delete('proyectos/{project}/hitos/{milestone}', [ProjectPartsController::class, 'destroyMilestone'])->name('admin.projects.milestones.destroy');
+
+                Route::post('proyectos/{project}/entregables', [ProjectPartsController::class, 'storeDeliverable'])->name('admin.projects.deliverables.store');
+                Route::put('proyectos/{project}/entregables/{deliverable}', [ProjectPartsController::class, 'updateDeliverable'])->name('admin.projects.deliverables.update');
+                Route::delete('proyectos/{project}/entregables/{deliverable}', [ProjectPartsController::class, 'destroyDeliverable'])->name('admin.projects.deliverables.destroy');
+
+                Route::post('proyectos/{project}/archivos', [ProjectPartsController::class, 'storeFile'])
+                    ->middleware('throttle:30,1')->name('admin.projects.files.store');
+                Route::delete('proyectos/{project}/archivos/{file}', [ProjectPartsController::class, 'destroyFile'])->name('admin.projects.files.destroy');
+            });
+        });
+
+        /* Tareas */
+        Route::middleware('permission:tareas.gestionar')->group(function () {
+            Route::get('tareas', [TaskController::class, 'index'])->name('admin.tasks.index');
+            Route::post('tareas', [TaskController::class, 'store'])->name('admin.tasks.store');
+            Route::get('tareas/{task}', [TaskController::class, 'show'])->name('admin.tasks.show');
+            Route::put('tareas/{task}', [TaskController::class, 'update'])->name('admin.tasks.update');
+            Route::patch('tareas/{task}/estado', [TaskController::class, 'updateStatus'])->name('admin.tasks.status');
+            Route::delete('tareas/{task}', [TaskController::class, 'destroy'])->name('admin.tasks.destroy');
+            Route::post('tareas/{task}/comentarios', [TaskController::class, 'storeComment'])->name('admin.tasks.comments.store');
+            Route::delete('comentarios/{comment}', [TaskController::class, 'destroyComment'])->name('admin.tasks.comments.destroy');
+        });
+
         /* Historial: notas e interacciones (el permiso depende del registro) */
         Route::post('{subjectType}/{subjectId}/actividades', [ActivityController::class, 'store'])
-            ->whereIn('subjectType', ['clientes', 'prospectos'])
+            ->whereIn('subjectType', ['clientes', 'prospectos', 'proyectos'])
             ->whereNumber('subjectId')
             ->name('admin.activities.store');
         Route::delete('actividades/{activity}', [ActivityController::class, 'destroy'])->name('admin.activities.destroy');

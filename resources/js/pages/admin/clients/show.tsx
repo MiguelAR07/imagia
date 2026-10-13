@@ -1,4 +1,4 @@
-import { Head, router, setLayoutProps, useForm } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps, useForm } from '@inertiajs/react';
 import {
     Archive,
     ArchiveRestore,
@@ -32,7 +32,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCan } from '@/hooks/use-can';
 import { formatDate } from '@/lib/format';
+import { PROJECT_STATUS_TONE } from '@/lib/project-labels';
 import { destroy, index, restore, show } from '@/routes/admin/clients';
+import { show as showProject } from '@/routes/admin/projects';
 import {
     destroy as destroyContact,
     store as storeContact,
@@ -42,11 +44,23 @@ import type { ActivityItem, ClientDetail, ContactItem, Option } from '@/types';
 
 type Props = {
     client: ClientDetail;
+    projects: {
+        id: number;
+        name: string;
+        status: string;
+        status_label: string;
+        due_date: string | null;
+    }[];
     activities: ActivityItem[];
     options: { types: Option[]; statuses: Option[]; activity_types: Option[] };
 };
 
-export default function ClientShow({ client, activities, options }: Props) {
+export default function ClientShow({
+    client,
+    projects,
+    activities,
+    options,
+}: Props) {
     const can = useCan();
     const canManage = can('clientes.gestionar');
     const [editing, setEditing] = useState(false);
@@ -298,6 +312,42 @@ export default function ClientShow({ client, activities, options }: Props) {
                                                     />
                                                 </div>
                                             )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </section>
+
+                        <section className="rounded-xl border bg-card p-5">
+                            <h2 className="mb-4 text-base font-semibold">
+                                Proyectos
+                            </h2>
+                            {projects.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">
+                                    Este cliente aún no tiene proyectos.
+                                </p>
+                            ) : (
+                                <ul className="divide-y">
+                                    {projects.map((p) => (
+                                        <li
+                                            key={p.id}
+                                            className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0"
+                                        >
+                                            <Link
+                                                href={showProject(p.id)}
+                                                className="text-sm font-medium hover:underline"
+                                            >
+                                                {p.name}
+                                            </Link>
+                                            <StatusBadge
+                                                tone={
+                                                    PROJECT_STATUS_TONE[
+                                                        p.status
+                                                    ] ?? 'neutral'
+                                                }
+                                            >
+                                                {p.status_label}
+                                            </StatusBadge>
                                         </li>
                                     ))}
                                 </ul>

@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\ActivityRequest;
 use App\Models\Activity;
 use App\Models\Client;
 use App\Models\Lead;
+use App\Models\Project;
 use App\Support\Permissions;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
@@ -26,6 +27,7 @@ class ActivityController extends Controller
     private const SUBJECTS = [
         'clientes' => [Client::class, 'clientes.gestionar'],
         'prospectos' => [Lead::class, 'prospectos.gestionar'],
+        'proyectos' => [Project::class, 'proyectos.gestionar'],
     ];
 
     public function store(ActivityRequest $request, string $subjectType, int $subjectId): RedirectResponse
