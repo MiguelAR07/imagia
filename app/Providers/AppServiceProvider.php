@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use App\Models\Client;
 use App\Models\Lead;
+use App\Models\Plan;
 use App\Models\Project;
+use App\Models\Service;
 use App\Models\User;
 use App\Support\Permissions;
 use Carbon\CarbonImmutable;
@@ -37,6 +39,8 @@ class AppServiceProvider extends ServiceProvider
             'client' => Client::class,
             'lead' => Lead::class,
             'project' => Project::class,
+            'plan' => Plan::class,
+            'service' => Service::class,
         ]);
 
         // El administrador puede hacer todo; el resto depende de sus permisos.

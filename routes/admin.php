@@ -2,6 +2,10 @@
 
 use App\Http\Controllers\Admin\ActivityController;
 use App\Http\Controllers\Admin\BrandSettingsController;
+use App\Http\Controllers\Admin\Catalog\FaqController;
+use App\Http\Controllers\Admin\Catalog\FeatureController;
+use App\Http\Controllers\Admin\Catalog\PlanController;
+use App\Http\Controllers\Admin\Catalog\ServiceController;
 use App\Http\Controllers\Admin\ClientContactController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ContactSettingsController;
@@ -124,6 +128,36 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
             Route::delete('tareas/{task}', [TaskController::class, 'destroy'])->name('admin.tasks.destroy');
             Route::post('tareas/{task}/comentarios', [TaskController::class, 'storeComment'])->name('admin.tasks.comments.store');
             Route::delete('comentarios/{comment}', [TaskController::class, 'destroyComment'])->name('admin.tasks.comments.destroy');
+        });
+
+        /* Catálogo: servicios, planes, funcionalidades y preguntas frecuentes */
+        Route::middleware('permission:catalogo.gestionar')->prefix('catalogo')->name('admin.catalog.')->group(function () {
+            Route::get('/', fn () => to_route('admin.catalog.services.index'))->name('home');
+
+            Route::get('servicios', [ServiceController::class, 'index'])->name('services.index');
+            Route::post('servicios', [ServiceController::class, 'store'])->name('services.store');
+            Route::put('servicios/orden', [ServiceController::class, 'reorder'])->name('services.reorder');
+            Route::put('servicios/{service}', [ServiceController::class, 'update'])->name('services.update');
+            Route::delete('servicios/{service}', [ServiceController::class, 'destroy'])->name('services.destroy');
+
+            Route::get('planes', [PlanController::class, 'index'])->name('plans.index');
+            Route::get('planes/nuevo', [PlanController::class, 'create'])->name('plans.create');
+            Route::post('planes', [PlanController::class, 'store'])->name('plans.store');
+            Route::put('planes/orden', [PlanController::class, 'reorder'])->name('plans.reorder');
+            Route::get('planes/{plan}', [PlanController::class, 'edit'])->name('plans.edit');
+            Route::put('planes/{plan}', [PlanController::class, 'update'])->name('plans.update');
+            Route::delete('planes/{plan}', [PlanController::class, 'destroy'])->name('plans.destroy');
+
+            Route::get('funcionalidades', [FeatureController::class, 'index'])->name('features.index');
+            Route::post('funcionalidades', [FeatureController::class, 'store'])->name('features.store');
+            Route::put('funcionalidades/{feature}', [FeatureController::class, 'update'])->name('features.update');
+            Route::delete('funcionalidades/{feature}', [FeatureController::class, 'destroy'])->name('features.destroy');
+
+            Route::get('preguntas', [FaqController::class, 'index'])->name('faqs.index');
+            Route::post('preguntas', [FaqController::class, 'store'])->name('faqs.store');
+            Route::put('preguntas/orden', [FaqController::class, 'reorder'])->name('faqs.reorder');
+            Route::put('preguntas/{faq}', [FaqController::class, 'update'])->name('faqs.update');
+            Route::delete('preguntas/{faq}', [FaqController::class, 'destroy'])->name('faqs.destroy');
         });
 
         /* Historial: notas e interacciones (el permiso depende del registro) */

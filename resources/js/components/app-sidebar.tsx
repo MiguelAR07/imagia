@@ -5,6 +5,7 @@ import {
     FolderKanban,
     LayoutGrid,
     ListChecks,
+    Package,
     Settings2,
     Target,
     Users,
@@ -24,6 +25,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useCan } from '@/hooks/use-can';
 import { dashboard, home } from '@/routes';
+import { home as catalogHome } from '@/routes/admin/catalog';
 import { index as clientsIndex } from '@/routes/admin/clients';
 import { index as leadsIndex } from '@/routes/admin/leads';
 import { index as projectsIndex } from '@/routes/admin/projects';
@@ -81,6 +83,17 @@ export function AppSidebar() {
             : []),
     ];
 
+    const siteNavItems: NavItem[] = can('catalogo.gestionar')
+        ? [
+              {
+                  title: 'Catálogo',
+                  href: catalogHome(),
+                  icon: Package,
+                  matchChildren: true,
+              },
+          ]
+        : [];
+
     const systemNavItems: NavItem[] = [
         ...(can('usuarios.gestionar')
             ? [{ title: 'Usuarios', href: usersIndex(), icon: Users }]
@@ -119,6 +132,7 @@ export function AppSidebar() {
                 <NavMain items={mainNavItems} label="Panel" />
                 <NavMain items={commercialNavItems} label="Comercial" />
                 <NavMain items={operationNavItems} label="Operación" />
+                <NavMain items={siteNavItems} label="Sitio público" />
                 <NavMain items={systemNavItems} label="Sistema" />
             </SidebarContent>
 

@@ -5,6 +5,7 @@ import { initializeTheme } from '@/hooks/use-appearance';
 import AdminSettingsLayout from '@/layouts/admin-settings-layout';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
+import CatalogLayout from '@/layouts/catalog-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'IMAGIA';
@@ -21,6 +22,8 @@ void createInertiaApp({
                 return [AppLayout, SettingsLayout];
             case name.startsWith('admin/settings/'):
                 return [AppLayout, AdminSettingsLayout];
+            case name.startsWith('admin/catalog/'):
+                return [AppLayout, CatalogLayout];
             default:
                 return AppLayout;
         }
