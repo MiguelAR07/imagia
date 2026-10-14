@@ -93,15 +93,22 @@ class PageController extends SiteController
         return $this->legal('terms', 'Términos y condiciones');
     }
 
+    public function support(): Response
+    {
+        return $this->legal('support', 'Política de soporte y eximentes de responsabilidad');
+    }
+
     private function legal(string $key, string $title): Response
     {
         $legal = Settings::get(Settings::LEGAL);
         $brand = Settings::get(Settings::BRAND);
-        $email = Settings::get(Settings::CONTACT)['email'] ?? null;
+        $contact = Settings::get(Settings::CONTACT);
 
+        // Los datos vienen de Configuración: nunca queda un espacio en blanco en el documento.
         $text = strtr((string) $legal[$key], [
             '{marca}' => $brand['name'],
-            '{correo}' => $email ?: 'nuestro correo de contacto',
+            '{correo}' => $contact['email'] ?: 'el correo publicado en la página de contacto',
+            '{whatsapp}' => $contact['whatsapp'] ? '+'.preg_replace('/\D/', '', (string) $contact['whatsapp']) : 'el WhatsApp publicado en la página de contacto',
         ]);
 
         return $this->page('site/legal', [

@@ -27,6 +27,7 @@ class LegalSettingsController extends Controller
         $data = $request->validate([
             'privacy' => ['required', 'string', 'max:30000'],
             'terms' => ['required', 'string', 'max:30000'],
+            'support' => ['required', 'string', 'max:30000'],
         ]);
 
         Settings::put(Settings::LEGAL, [...$data, 'updated_at' => now()->toDateString()]);

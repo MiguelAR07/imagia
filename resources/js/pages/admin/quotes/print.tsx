@@ -5,6 +5,7 @@ import AppLogoIcon from '@/components/app-logo-icon';
 import { BrandWordmark } from '@/components/brand-wordmark';
 import { Button } from '@/components/ui/button';
 import { formatDate, formatMoney } from '@/lib/format';
+import { support } from '@/routes/site';
 import type { QuoteDetail } from '@/types';
 
 type Props = {
@@ -31,6 +32,11 @@ type Props = {
 export default function QuotePrint({ quote, recipient, contact }: Props) {
     const { brand } = usePage().props;
     const money = (v: string | number) => formatMoney(v, quote.currency);
+    // Dirección completa (con dominio) para que se lea en el PDF impreso.
+    const supportUrl = new URL(
+        support().url,
+        window.location.origin,
+    ).href.replace(/^https?:\/\//, '');
 
     // El documento siempre se ve en claro, aunque el panel esté en oscuro.
     useEffect(() => {
@@ -234,6 +240,13 @@ export default function QuotePrint({ quote, recipient, contact }: Props) {
                             <Terms title="Observaciones" text={quote.notes} />
                         )}
                     </section>
+
+                    <p className="mt-8 break-inside-avoid text-[11px] text-[#5d6472]">
+                        Al aceptar esta propuesta aceptas también nuestra
+                        política de soporte y eximentes de responsabilidad
+                        (horario de soporte, canales oficiales y alcance), que
+                        puedes consultar en {supportUrl}.
+                    </p>
 
                     <footer className="mt-10 flex items-center justify-between gap-4 border-t border-[#e3e6ec] pt-4 text-[11px] text-[#5d6472]">
                         <span>

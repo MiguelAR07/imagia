@@ -18,6 +18,7 @@ import {
     quote,
     service,
     services,
+    support,
     terms,
 } from '@/routes/site';
 import type { SiteProps } from '@/types';
@@ -309,6 +310,12 @@ export default function SiteLayout({ children }: PropsWithChildren) {
                                 className="hover:text-foreground"
                             >
                                 Términos
+                            </Link>
+                            <Link
+                                href={support()}
+                                className="hover:text-foreground"
+                            >
+                                Soporte
                             </Link>
                             {/* Enlace normal (recarga): el panel usa su propio tema claro u oscuro. */}
                             <a

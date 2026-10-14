@@ -1,9 +1,11 @@
 import { Head } from '@inertiajs/react';
+import { Fragment } from 'react';
 import { formatDate } from '@/lib/format';
 import type { SiteProps } from '@/types';
 
 /**
- * Texto legal en formato simple: «## » inicia un título, una línea en blanco separa párrafos.
+ * Texto legal en formato simple: «## » y «### » son títulos, las líneas que empiezan
+ * con «- » forman una lista, **texto** va en negrita y una línea en blanco separa párrafos.
  * Se muestra como texto (nunca como HTML), así que no se puede inyectar código.
  */
 export default function Legal({
@@ -28,22 +30,71 @@ export default function Legal({
                     </p>
                 )}
                 <div className="space-y-4 text-muted-foreground">
-                    {blocks.map((block, i) =>
-                        block.startsWith('## ') ? (
-                            <h2
-                                key={i}
-                                className="pt-4 text-xl font-bold text-foreground"
-                            >
-                                {block.slice(3)}
-                            </h2>
-                        ) : (
+                    {blocks.map((block, i) => {
+                        if (block.startsWith('### ')) {
+                            return (
+                                <h3
+                                    key={i}
+                                    className="pt-2 text-lg font-semibold text-foreground"
+                                >
+                                    {block.slice(4)}
+                                </h3>
+                            );
+                        }
+
+                        if (block.startsWith('## ')) {
+                            return (
+                                <h2
+                                    key={i}
+                                    className="pt-4 text-xl font-bold text-foreground"
+                                >
+                                    {block.slice(3)}
+                                </h2>
+                            );
+                        }
+
+                        const lines = block.split('\n');
+
+                        if (lines.every((l) => l.trim().startsWith('- '))) {
+                            return (
+                                <ul
+                                    key={i}
+                                    className="list-disc space-y-1.5 pl-6"
+                                >
+                                    {lines.map((l, j) => (
+                                        <li key={j}>
+                                            <Inline text={l.trim().slice(2)} />
+                                        </li>
+                                    ))}
+                                </ul>
+                            );
+                        }
+
+                        return (
                             <p key={i} className="whitespace-pre-line">
-                                {block}
+                                <Inline text={block} />
                             </p>
-                        ),
-                    )}
+                        );
+                    })}
                 </div>
             </article>
+        </>
+    );
+}
+
+/** Solo interpreta **negrita**; el resto es texto. */
+function Inline({ text }: { text: string }) {
+    return (
+        <>
+            {text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+                part.startsWith('**') && part.endsWith('**') ? (
+                    <strong key={i} className="font-semibold text-foreground">
+                        {part.slice(2, -2)}
+                    </strong>
+                ) : (
+                    <Fragment key={i}>{part}</Fragment>
+                ),
+            )}
         </>
     );
 }

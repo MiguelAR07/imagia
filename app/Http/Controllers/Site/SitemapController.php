@@ -22,6 +22,7 @@ class SitemapController extends Controller
             ['loc' => route('site.process'), 'priority' => '0.6'],
             ['loc' => route('site.quote'), 'priority' => '0.8'],
             ['loc' => route('site.contact'), 'priority' => '0.7'],
+            ['loc' => route('site.support'), 'priority' => '0.3'],
         ])
             ->merge(Service::query()->where('is_published', true)->get(['slug', 'updated_at'])
                 ->map(fn (Service $s) => ['loc' => route('site.service', $s->slug), 'lastmod' => $s->updated_at?->toDateString(), 'priority' => '0.8']))

@@ -188,11 +188,31 @@ class PublicSiteTest extends TestCase
     public function test_admins_can_edit_the_legal_texts()
     {
         $this->actingAs($this->admin())
-            ->put(route('admin.legal.update'), ['privacy' => "## Nuevo\n\nTexto", 'terms' => 'Términos'])
+            ->put(route('admin.legal.update'), ['privacy' => "## Nuevo\n\nTexto", 'terms' => 'Términos', 'support' => 'Soporte'])
             ->assertSessionHasNoErrors();
 
         $this->assertSame("## Nuevo\n\nTexto", Settings::get(Settings::LEGAL)['privacy']);
+        $this->assertSame('Soporte', Settings::get(Settings::LEGAL)['support']);
         $this->actingAs($this->collaborator())->get(route('admin.legal.edit'))->assertForbidden();
+    }
+
+    public function test_the_support_policy_fills_the_official_channels_without_blanks()
+    {
+        // Sin datos de contacto, remite a la página de contacto en vez de dejar espacios en blanco.
+        $this->get(route('site.support'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('site/legal')
+                ->where('title', 'Política de soporte y eximentes de responsabilidad')
+                ->where('content', fn ($c) => str_contains($c, 'lunes a viernes, de 8:00 a. m. a 3:00 p. m.')
+                    && str_contains($c, 'el WhatsApp publicado en la página de contacto')
+                    && ! str_contains($c, '{whatsapp}') && ! str_contains($c, '____')));
+
+        Settings::put(Settings::CONTACT, [...Settings::get(Settings::CONTACT), 'email' => 'soporte@imagia.dev', 'whatsapp' => '57 300 123 4567']);
+
+        $this->get(route('site.support'))
+            ->assertInertia(fn (Assert $page) => $page->where('content', fn ($c) => str_contains($c, '**WhatsApp empresarial:** +573001234567')
+                && str_contains($c, 'soporte@imagia.dev') && str_contains($c, 'Proveedor del software:** IMAGIA')));
     }
 
     public function test_service_features_shown_publicly_come_from_the_catalog()

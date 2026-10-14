@@ -68,6 +68,7 @@ class Settings
             self::LEGAL => [
                 'privacy' => (string) @file_get_contents(resource_path('legal/privacidad.md')),
                 'terms' => (string) @file_get_contents(resource_path('legal/terminos.md')),
+                'support' => (string) @file_get_contents(resource_path('legal/soporte.md')),
                 'updated_at' => null,
             ],
             self::ASSISTANT => [
