@@ -17,6 +17,8 @@ class Settings
 
     public const CONTACT = 'contacto';
 
+    public const LEGAL = 'legal';
+
     private const CACHE_PREFIX = 'settings:';
 
     /**
@@ -60,6 +62,11 @@ class Settings
                 'linkedin' => null,
                 'tiktok' => null,
                 'github' => null,
+            ],
+            self::LEGAL => [
+                'privacy' => (string) @file_get_contents(resource_path('legal/privacidad.md')),
+                'terms' => (string) @file_get_contents(resource_path('legal/terminos.md')),
+                'updated_at' => null,
             ],
             default => [],
         };

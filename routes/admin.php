@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ContactSettingsController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LeadController;
+use App\Http\Controllers\Admin\LegalSettingsController;
 use App\Http\Controllers\Admin\PipelineStageController;
 use App\Http\Controllers\Admin\PortfolioController;
 use App\Http\Controllers\Admin\ProjectController;
@@ -37,6 +38,9 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
 
             Route::get('configuracion/contacto', [ContactSettingsController::class, 'edit'])->name('admin.contact.edit');
             Route::put('configuracion/contacto', [ContactSettingsController::class, 'update'])->name('admin.contact.update');
+
+            Route::get('configuracion/legal', [LegalSettingsController::class, 'edit'])->name('admin.legal.edit');
+            Route::put('configuracion/legal', [LegalSettingsController::class, 'update'])->name('admin.legal.update');
         });
 
         Route::middleware('permission:'.Permissions::MANAGE_USERS)->group(function () {

@@ -182,6 +182,13 @@
     }
 }
 
+/* Flotación suave de los elementos del hero */
+@keyframes float {
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
 /* Luz que recorre la pantalla del isotipo animado */
 .logo-pulse {
     animation: logo-run 2.6s linear infinite;

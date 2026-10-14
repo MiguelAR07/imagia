@@ -5,5 +5,6 @@ export type * from './common';
 export type * from './leads';
 export type * from './projects';
 export type * from './quotes';
+export type * from './site';
 export type * from './navigation';
 export type * from './ui';

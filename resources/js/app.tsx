@@ -7,16 +7,24 @@ import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
 import CatalogLayout from '@/layouts/catalog-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import SiteLayout from '@/layouts/site-layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'IMAGIA';
 
 void createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    // Las páginas públicas ya traen el nombre de la marca en su título.
+    title: (title) =>
+        !title
+            ? appName
+            : title.includes(appName)
+              ? title
+              : `${title} - ${appName}`,
     layout: (name) => {
         switch (true) {
-            case name === 'welcome':
             case name === 'admin/quotes/print':
                 return null;
+            case name.startsWith('site/'):
+                return SiteLayout;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('settings/'):

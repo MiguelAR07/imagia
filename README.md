@@ -99,15 +99,15 @@ Los permisos de los módulos futuros ya existen en `app/Support/Permissions.php`
 
 ## Módulos del panel (Fase 3)
 
-| Módulo | Ruta | Lo esencial |
-|---|---|---|
-| Prospectos | `/admin/prospectos` | Embudo Kanban (arrastrar o selector), etapas editables, «perdido» exige motivo, seguimientos vencidos, conversión a cliente |
-| Clientes | `/admin/clientes` | Búsqueda, ficha, contactos (uno principal), historial de notas e interacciones, archivar/restaurar |
-| Cotizaciones | `/admin/cotizaciones` | Número `COT-AAAA-NNN`, totales calculados en el servidor, estados, vista imprimible/PDF, crear proyecto al aceptar |
-| Proyectos | `/admin/proyectos` | Tabla, tablero y calendario; ficha con tareas, hitos, entregables, archivos privados e historial |
-| Tareas | `/admin/tareas` | Vista general con filtros por vencimiento, estado, proyecto y responsable; comentarios |
-| Catálogo | `/admin/catalogo` | Servicios, planes (precio fijo, «desde» o cotización), funcionalidades reutilizables, preguntas frecuentes |
-| Portafolio | `/admin/portafolio` | Portada, galería, tecnologías, testimonios autorizados; publicar, duplicar, confidencial |
+| Módulo       | Ruta                  | Lo esencial                                                                                                                 |
+| ------------ | --------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Prospectos   | `/admin/prospectos`   | Embudo Kanban (arrastrar o selector), etapas editables, «perdido» exige motivo, seguimientos vencidos, conversión a cliente |
+| Clientes     | `/admin/clientes`     | Búsqueda, ficha, contactos (uno principal), historial de notas e interacciones, archivar/restaurar                          |
+| Cotizaciones | `/admin/cotizaciones` | Número `COT-AAAA-NNN`, totales calculados en el servidor, estados, vista imprimible/PDF, crear proyecto al aceptar          |
+| Proyectos    | `/admin/proyectos`    | Tabla, tablero y calendario; ficha con tareas, hitos, entregables, archivos privados e historial                            |
+| Tareas       | `/admin/tareas`       | Vista general con filtros por vencimiento, estado, proyecto y responsable; comentarios                                      |
+| Catálogo     | `/admin/catalogo`     | Servicios, planes (precio fijo, «desde» o cotización), funcionalidades reutilizables, preguntas frecuentes                  |
+| Portafolio   | `/admin/portafolio`   | Portada, galería, tecnologías, testimonios autorizados; publicar, duplicar, confidencial                                    |
 
 Las imágenes del portafolio y los archivos de proyectos se guardan en `storage/app/private` y se sirven a través de controladores que validan permisos.
 
@@ -116,7 +116,7 @@ Las imágenes del portafolio y los archivos de proyectos se guardan en `storage/
 1. ✅ Marca y experiencia visual
 2. ✅ Base de la plataforma: estructura, base de datos, acceso, roles, configuración
 3. ✅ Administración: clientes, prospectos, proyectos, tareas, catálogo, portafolio, planes, cotizaciones
-4. Sitio comercial
+4. ✅ Sitio comercial: inicio, servicios, proyectos, planes, proceso, cotizar, contacto, legales, SEO
 5. Asistente inteligente
 6. Seguimiento comercial y financiero
 7. Pruebas y despliegue

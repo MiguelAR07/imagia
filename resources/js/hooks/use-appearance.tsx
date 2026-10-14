@@ -46,7 +46,10 @@ const applyTheme = (appearance: Appearance): void => {
         return;
     }
 
-    const isDark = isDarkMode(appearance);
+    // El sitio público siempre va en oscuro (lo marca el servidor con data-force-dark).
+    const isDark =
+        document.documentElement.dataset.forceDark === 'true' ||
+        isDarkMode(appearance);
 
     document.documentElement.classList.toggle('dark', isDark);
     document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
