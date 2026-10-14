@@ -349,6 +349,54 @@ function Walkthrough({
     title: string;
     onOpen: (img: Image) => void;
 }) {
+    // Con muchos pasos (por ejemplo, todos los módulos de un panel) se usa una cuadrícula compacta.
+    if (images.length > 6) {
+        return (
+            <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {images.map((img, i) => {
+                    const caption = img.caption ?? '';
+                    const split = caption.indexOf(':');
+
+                    return (
+                        <li
+                            key={img.url}
+                            className="overflow-hidden rounded-2xl border bg-card"
+                        >
+                            <button
+                                type="button"
+                                onClick={() => onOpen(img)}
+                                className="block w-full overflow-hidden border-b bg-muted/40"
+                                aria-label={`Ampliar paso ${i + 1}`}
+                            >
+                                <img
+                                    src={img.url}
+                                    alt={caption || `Paso ${i + 1} de ${title}`}
+                                    loading="lazy"
+                                    className="aspect-[16/10] w-full object-cover object-top transition-transform duration-500 motion-safe:hover:scale-[1.03]"
+                                />
+                            </button>
+                            <div className="space-y-1.5 p-4">
+                                <p className="flex items-center gap-2 font-semibold">
+                                    <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#3b5bff] to-[#22d3ee] font-mono text-[11px] font-bold text-white">
+                                        {i + 1}
+                                    </span>
+                                    {split > 0
+                                        ? caption.slice(0, split)
+                                        : `Paso ${i + 1}`}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    {split > 0
+                                        ? caption.slice(split + 1).trim()
+                                        : caption}
+                                </p>
+                            </div>
+                        </li>
+                    );
+                })}
+            </ol>
+        );
+    }
+
     return (
         <ol className="space-y-6">
             {images.map((img, i) => {
