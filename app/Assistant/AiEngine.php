@@ -162,11 +162,7 @@ class AiEngine implements AssistantEngine
         }
 
         foreach (PublicCatalog::plans() as $plan) {
-            $price = match ($plan['price_type']) {
-                'fixed' => ' Precio publicado: '.number_format((float) $plan['price'], 0, ',', '.')." {$plan['currency']}.",
-                'from' => ' Precio publicado: desde '.number_format((float) $plan['price'], 0, ',', '.')." {$plan['currency']}.",
-                default => ' Precio: según cotización.',
-            };
+            $price = ' Precio: '.PublicCatalog::priceText($plan).'.';
             $included = collect($plan['included'])->take(8)->implode(', ');
 
             $lines[] = "- Plan «{$plan['name']}»: {$plan['summary']}".($included !== '' ? " Incluye: {$included}." : '').$price;

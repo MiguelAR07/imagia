@@ -3,6 +3,8 @@
 namespace App\Assistant;
 
 use App\Models\ChatSession;
+use App\Models\Faq;
+use App\Support\PublicCatalog;
 use Illuminate\Support\Str;
 
 /**
@@ -26,6 +28,11 @@ class RulesEngine implements AssistantEngine
     public const BUDGETS = ['Menos de 2 millones', 'Entre 2 y 5 millones', 'Entre 5 y 15 millones', 'Más de 15 millones', 'Aún no lo sé'];
 
     public const TIMEFRAMES = ['Lo antes posible', 'En 1 a 3 meses', 'Más adelante', 'Solo estoy explorando'];
+
+    private const UNKNOWN_ANSWER = 'Esa pregunta prefiero que te la responda directamente el equipo, para no darte información equivocada. Al final de la conversación puedes dejarnos tus datos o escribirnos por WhatsApp.';
+
+    /** Palabras que no ayudan a encontrar la pregunta frecuente correcta. */
+    private const STOPWORDS = ['como', 'cual', 'cuales', 'cuanto', 'cuanta', 'cuantos', 'cuando', 'donde', 'para', 'por', 'que', 'una', 'uno', 'unos', 'las', 'los', 'del', 'con', 'sin', 'mas', 'pero', 'ustedes', 'tienen', 'hacen', 'puedo', 'puede', 'pueden', 'quiero', 'necesito', 'esto', 'esta', 'este', 'eso', 'tengo', 'hay', 'son', 'sus', 'mis', 'sobre'];
 
     /** Recorrido de preguntas según el objetivo. */
     private const PATHS = [
@@ -69,6 +76,18 @@ class RulesEngine implements AssistantEngine
     public function reply(ChatSession $session, string $input): AssistantTurn
     {
         $input = trim($input);
+
+        // 0. Si el visitante hace una pregunta, se responde primero y luego se retoma la conversación.
+        if ($this->isQuestion($input)) {
+            $answer = $this->answerQuestion($input);
+
+            // Sin respuesta, en una pregunta abierta (negocio, idea) el mensaje se toma como la respuesta.
+            $freeText = in_array($session->answer('_pending'), ['business', 'idea'], true);
+
+            if ($answer !== null || ($session->answer('_pending') !== null && ! $freeText) || $session->answer('recommendation') !== null) {
+                return $this->answerAndResume($session, $input, $answer ?? self::UNKNOWN_ANSWER);
+            }
+        }
 
         // 1. Sin objetivo todavía: lo detectamos por la opción elegida o por palabras clave.
         if ($session->answer('intent') === null) {
@@ -166,6 +185,142 @@ class RulesEngine implements AssistantEngine
             offerActions: true,
             stage: 'closing',
         );
+    }
+
+    /**
+     * Responde la pregunta y vuelve al punto de la conversación donde estaba el visitante.
+     */
+    private function answerAndResume(ChatSession $session, string $input, string $answer): AssistantTurn
+    {
+        // Ya hubo recomendación: después de responder se ofrecen los siguientes pasos.
+        if ($session->answer('recommendation') !== null) {
+            return new AssistantTurn("{$answer}\n\n¿Quieres solicitar una cotización o seguir por WhatsApp?", offerActions: true, stage: 'closing');
+        }
+
+        $pending = $session->answer('_pending');
+
+        // Primera pregunta de la conversación: si deja ver qué busca, se sigue por ese camino.
+        if ($session->answer('intent') === null) {
+            $intent = $this->detectIntent($input);
+
+            if ($intent === 'unsure') {
+                return new AssistantTurn("{$answer}\n\nY cuéntame, ¿qué te gustaría mejorar o conseguir en tu negocio?", array_values(self::INTENTS), stage: 'start');
+            }
+
+            $session->setAnswer('intent', $intent);
+            $session->setAnswer('first_message', $input);
+            $pending = 'business';
+        }
+
+        $next = $this->ask($session, $pending ?? $this->nextQuestion($session) ?? 'business');
+
+        $question = str_replace(['Perfecto. ', 'Sin problema, para eso estoy. '], '', $next->reply);
+
+        return new AssistantTurn("{$answer}\n\nAhora sí, sigamos. {$question}", $next->quickReplies);
+    }
+
+    private function isQuestion(string $input): bool
+    {
+        $text = Str::lower(Str::ascii($input));
+
+        // Sin signos de pregunta solo cuentan inicios claramente interrogativos
+        // («que vendo ropa» es una respuesta, no una pregunta).
+        return Str::contains($input, ['?', '¿'])
+            || preg_match('/^(cuanto|cuanta|cuantos|cuantas|cuando|cual|cuales|donde|hacen|ofrecen|incluye|incluyen|aceptan)\b/', $text) === 1;
+    }
+
+    /**
+     * Responde con lo publicado en el panel: preguntas frecuentes, planes y servicios.
+     * Si no hay información publicada, no inventa: devuelve null.
+     */
+    private function answerQuestion(string $input): ?string
+    {
+        $text = Str::lower(Str::ascii($input));
+
+        // 1. Preguntas frecuentes publicadas (las del sitio, de los planes y de los servicios).
+        $faq = $this->matchFaq($text);
+
+        if ($faq !== null) {
+            return $faq;
+        }
+
+        $plans = PublicCatalog::plans();
+
+        // 2. Precios: solo los configurados.
+        if (Str::contains($text, ['precio', 'cuesta', 'costo', 'cobran', 'valor', 'vale', 'tarifa', 'cuanto sale'])) {
+            if ($plans->isEmpty()) {
+                return 'El valor depende de lo que necesites. Después de conocer tu proyecto te enviamos una propuesta por escrito, sin compromiso.';
+            }
+
+            $lines = $plans->map(fn ($p) => "• {$p['name']}: ".PublicCatalog::priceText($p))->implode("\n");
+
+            return "Estos son nuestros planes:\n{$lines}\n\nEl valor final depende del alcance y se confirma en una propuesta por escrito.";
+        }
+
+        // 3. Tiempos: solo los estimados configurados en cada plan.
+        if (Str::contains($text, ['tiempo', 'tarda', 'demora', 'dura', 'cuando estaria', 'cuando esta', 'plazo', 'entrega'])) {
+            $timed = $plans->filter(fn ($p) => filled($p['estimated_time']));
+
+            if ($timed->isEmpty()) {
+                return 'El tiempo depende del alcance del proyecto. En la propuesta te damos las fechas de cada etapa por escrito.';
+            }
+
+            $lines = $timed->map(fn ($p) => "• {$p['name']}: {$p['estimated_time']}")->implode("\n");
+
+            return "Tiempos estimados:\n{$lines}\n\nLa fecha exacta se define en la propuesta, según el alcance.";
+        }
+
+        // 4. Qué ofrecemos: los servicios publicados.
+        if (Str::contains($text, ['servicio', 'ofrecen', 'que hacen', 'a que se dedican', 'que venden'])) {
+            $services = PublicCatalog::services();
+
+            return $services->isEmpty()
+                ? 'Hacemos páginas web, sistemas de gestión para negocios, aplicaciones y automatización de procesos.'
+                : 'Ofrecemos: '.$services->pluck('name')->implode(', ').'.';
+        }
+
+        return null;
+    }
+
+    /**
+     * Busca la pregunta frecuente publicada que más palabras comparte con la del visitante.
+     */
+    private function matchFaq(string $text): ?string
+    {
+        $words = $this->keywords($text);
+
+        if ($words === []) {
+            return null;
+        }
+
+        $best = null;
+        $bestScore = 0;
+
+        foreach (Faq::query()->where('is_published', true)->get(['question', 'answer']) as $faq) {
+            $score = count(array_intersect($words, $this->keywords(Str::lower(Str::ascii($faq->question)))));
+
+            if ($score > $bestScore) {
+                [$best, $bestScore] = [$faq->answer, $score];
+            }
+        }
+
+        // Con preguntas cortas basta una palabra clave en común; con las largas, dos.
+        return $bestScore >= min(2, count($words)) ? $best : null;
+    }
+
+    /**
+     * Raíces de las palabras importantes («precios» y «precio» cuentan igual).
+     *
+     * @return list<string>
+     */
+    private function keywords(string $text): array
+    {
+        preg_match_all('/[a-z]{4,}/', $text, $matches);
+
+        return array_values(array_unique(array_map(
+            fn (string $w) => mb_substr($w, 0, 5),
+            array_diff($matches[0], self::STOPWORDS),
+        )));
     }
 
     /**

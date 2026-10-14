@@ -86,6 +86,22 @@ class PublicCatalog
     }
 
     /**
+     * Precio de un plan publicado en texto, tal como está configurado (nunca inventado).
+     *
+     * @param  array<string, mixed>  $plan  Un elemento de plans()
+     */
+    public static function priceText(array $plan): string
+    {
+        $amount = fn () => '$'.number_format((float) $plan['price'], 0, ',', '.')." {$plan['currency']}";
+
+        return match ($plan['price_type']) {
+            'fixed' => $amount(),
+            'from' => 'desde '.$amount(),
+            default => 'según cotización',
+        };
+    }
+
+    /**
      * @return Collection<int, array<string, mixed>>
      */
     public static function projects(?string $category = null, bool $featuredOnly = false, ?int $limit = null): Collection

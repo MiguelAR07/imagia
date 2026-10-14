@@ -7,6 +7,7 @@ use App\Assistant\Assistant;
 use App\Assistant\AssistantEngine;
 use App\Assistant\AssistantTurn;
 use App\Models\ChatSession;
+use App\Models\Faq;
 use App\Models\Lead;
 use App\Models\Plan;
 use App\Support\Settings;
@@ -106,6 +107,52 @@ class AssistantTest extends TestCase
         $uuid = $this->conversation(['no estoy seguro', 'Taller de motos']);
         $state = $this->say($uuid, 'Ahorrar tiempo en tareas repetitivas');
         $this->assertSame('¿Qué tarea repetitiva te quita más tiempo?', end($state['messages'])['content']);
+    }
+
+    public function test_price_questions_are_answered_only_with_configured_prices_and_the_flow_resumes()
+    {
+        $uuid = $this->conversation(['Necesito una página web', 'Panadería']);
+
+        // Sin planes publicados no hay cifras.
+        $state = $this->say($uuid, '¿Cuánto cuesta una página?');
+        $last = end($state['messages']);
+        $this->assertStringContainsString('depende de lo que necesites', $last['content']);
+        $this->assertStringNotContainsString('$', $last['content']);
+        $this->assertStringContainsString('¿Actualmente tienes una página web?', $last['content']);
+        $this->assertSame(['No tengo', 'Sí, pero no me sirve', 'Sí, y quiero mejorarla'], $last['quick_replies']);
+
+        Plan::query()->where('slug', 'presencia-digital')->update(['is_published' => true, 'price' => 1200000]);
+
+        $state = $this->say($uuid, 'cuanto cuesta');
+        $this->assertStringContainsString('Presencia Digital: desde $1.200.000 COP', end($state['messages'])['content']);
+
+        // La pregunta no se guardó como respuesta: la conversación sigue donde iba.
+        $state = $this->say($uuid, 'No tengo');
+        $this->assertSame('¿Qué te gustaría mostrar en internet?', end($state['messages'])['content']);
+    }
+
+    public function test_published_faqs_answer_visitor_questions()
+    {
+        Faq::query()->create([
+            'question' => '¿Incluyen el dominio y el hosting?',
+            'answer' => 'Te ayudamos a contratarlos a tu nombre; su costo anual va aparte.',
+            'is_published' => true,
+        ]);
+
+        $state = $this->say($this->start(), '¿El hosting está incluido?');
+
+        $this->assertStringContainsString('Te ayudamos a contratarlos a tu nombre', end($state['messages'])['content']);
+    }
+
+    public function test_unknown_questions_are_not_invented_and_answers_are_not_mistaken_for_questions()
+    {
+        $uuid = $this->conversation(['Quiero organizar mi negocio', 'Que vendo ropa por catálogo']);
+        $session = ChatSession::query()->where('uuid', $uuid)->first();
+        $this->assertSame('Que vendo ropa por catálogo', $session->answer('business'));
+
+        $state = $this->say($uuid, '¿Trabajan con empresas de otros países?');
+        $this->assertStringContainsString('prefiero que te la responda directamente el equipo', end($state['messages'])['content']);
+        $this->assertStringContainsString('¿Cómo gestionas hoy tus clientes o procesos?', end($state['messages'])['content']);
     }
 
     public function test_leaving_contact_data_creates_a_lead_with_the_summary_and_consent()
