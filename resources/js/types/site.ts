@@ -19,6 +19,7 @@ export type SiteProps = {
         services: { name: string; slug: string }[];
         logo_parts: LogoPart[];
         origin: OriginPart[];
+        assistant: boolean;
     };
     seoTitle: string;
 };

@@ -3,6 +3,7 @@ import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn } from '@/lib/utils';
+import { edit as editAssistant } from '@/routes/admin/assistant';
 import { edit as editBrand } from '@/routes/admin/brand';
 import { edit as editContact } from '@/routes/admin/contact';
 import { edit as editLegal } from '@/routes/admin/legal';
@@ -11,6 +12,7 @@ const tabs = [
     { title: 'Marca', href: editBrand() },
     { title: 'Contacto y redes', href: editContact() },
     { title: 'Textos legales', href: editLegal() },
+    { title: 'Asistente', href: editAssistant() },
 ];
 
 export default function AdminSettingsLayout({ children }: PropsWithChildren) {

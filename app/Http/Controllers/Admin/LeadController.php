@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\LeadRequest;
 use App\Models\Activity;
+use App\Models\ChatSession;
 use App\Models\Client;
 use App\Models\Lead;
 use App\Models\PipelineStage;
@@ -85,6 +86,7 @@ class LeadController extends Controller
                 'last_contacted_at' => $lead->last_contacted_at?->toIso8601String(),
                 'client' => $lead->client?->only(['id', 'name']),
                 'archived' => $lead->trashed(),
+                'conversation_id' => ChatSession::query()->where('lead_id', $lead->id)->value('id'),
             ],
             'stages' => $this->stages(),
             'activities' => $lead->activities()->with('user:id,name')->limit(100)->get()

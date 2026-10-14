@@ -32,4 +32,5 @@ export type LeadDetail = LeadCard & {
     last_contacted_at: string | null;
     client: { id: number; name: string } | null;
     archived: boolean;
+    conversation_id: number | null;
 };

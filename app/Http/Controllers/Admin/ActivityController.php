@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ActivityRequest;
 use App\Models\Activity;
+use App\Models\ChatSession;
 use App\Models\Client;
 use App\Models\Lead;
 use App\Models\Project;
@@ -28,6 +29,7 @@ class ActivityController extends Controller
         'clientes' => [Client::class, 'clientes.gestionar'],
         'prospectos' => [Lead::class, 'prospectos.gestionar'],
         'proyectos' => [Project::class, 'proyectos.gestionar'],
+        'conversaciones' => [ChatSession::class, 'conversaciones.ver'],
     ];
 
     public function store(ActivityRequest $request, string $subjectType, int $subjectId): RedirectResponse

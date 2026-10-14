@@ -5,6 +5,7 @@ import {
     FileText,
     CalendarClock,
     Mail,
+    MessagesSquare,
     Pencil,
     Phone,
     ShieldCheck,
@@ -24,6 +25,7 @@ import { formatDate, formatDateTime, formatRelative } from '@/lib/format';
 import { stageDot } from '@/lib/stage-colors';
 import { cn } from '@/lib/utils';
 import { show as showClient } from '@/routes/admin/clients';
+import { show as showConversation } from '@/routes/admin/conversations';
 import { convert, destroy, index, move, show } from '@/routes/admin/leads';
 import { create as createQuote } from '@/routes/admin/quotes';
 import type { ActivityItem, LeadDetail, Option, Stage } from '@/types';
@@ -87,6 +89,19 @@ export default function LeadShow({ lead, stages, activities, options }: Props) {
                     actions={
                         !lead.archived && (
                             <>
+                                {lead.conversation_id &&
+                                    can('conversaciones.ver') && (
+                                        <Button variant="outline" asChild>
+                                            <Link
+                                                href={showConversation(
+                                                    lead.conversation_id,
+                                                )}
+                                            >
+                                                <MessagesSquare className="size-4" />
+                                                Ver conversación
+                                            </Link>
+                                        </Button>
+                                    )}
                                 {lead.client ? (
                                     <Button variant="outline" asChild>
                                         <Link href={showClient(lead.client.id)}>

@@ -35,4 +35,16 @@ return [
         ],
     ],
 
+    /*
+    | Asistente del sitio con IA (opcional). La clave solo vive en .env: nunca llega al navegador.
+    | Sin clave, el asistente funciona con el flujo guiado por reglas.
+    */
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('ASSISTANT_MODEL', 'claude-opus-5-5'),
+        // Máximo de respuestas con IA por día; al llegar al tope se usa el flujo guiado.
+        'daily_limit' => (int) env('ASSISTANT_DAILY_LIMIT', 300),
+        'timeout' => (float) env('ASSISTANT_TIMEOUT', 30),
+    ],
+
 ];

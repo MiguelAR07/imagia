@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityController;
+use App\Http\Controllers\Admin\AssistantSettingsController;
 use App\Http\Controllers\Admin\BrandSettingsController;
 use App\Http\Controllers\Admin\Catalog\FaqController;
 use App\Http\Controllers\Admin\Catalog\FeatureController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Admin\Catalog\ServiceController;
 use App\Http\Controllers\Admin\ClientContactController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ContactSettingsController;
+use App\Http\Controllers\Admin\ConversationController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\LegalSettingsController;
@@ -41,6 +43,9 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
 
             Route::get('configuracion/legal', [LegalSettingsController::class, 'edit'])->name('admin.legal.edit');
             Route::put('configuracion/legal', [LegalSettingsController::class, 'update'])->name('admin.legal.update');
+
+            Route::get('configuracion/asistente', [AssistantSettingsController::class, 'edit'])->name('admin.assistant.edit');
+            Route::put('configuracion/asistente', [AssistantSettingsController::class, 'update'])->name('admin.assistant.update');
         });
 
         Route::middleware('permission:'.Permissions::MANAGE_USERS)->group(function () {
@@ -92,6 +97,15 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
             Route::put('embudo/etapas/orden', [PipelineStageController::class, 'reorder'])->name('admin.stages.reorder');
             Route::put('embudo/etapas/{stage}', [PipelineStageController::class, 'update'])->name('admin.stages.update');
             Route::delete('embudo/etapas/{stage}', [PipelineStageController::class, 'destroy'])->name('admin.stages.destroy');
+        });
+
+        /* Conversaciones del asistente */
+        Route::middleware('permission:conversaciones.ver')->prefix('conversaciones')->name('admin.conversations.')->group(function () {
+            Route::get('/', [ConversationController::class, 'index'])->name('index');
+            Route::get('{conversation:id}', [ConversationController::class, 'show'])->name('show');
+            Route::patch('{conversation:id}', [ConversationController::class, 'update'])->name('update');
+            Route::delete('{conversation:id}', [ConversationController::class, 'destroy'])
+                ->middleware('permission:'.Permissions::MANAGE_BRAND)->name('destroy');
         });
 
         /* Proyectos */
@@ -203,7 +217,7 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
 
         /* Historial: notas e interacciones (el permiso depende del registro) */
         Route::post('{subjectType}/{subjectId}/actividades', [ActivityController::class, 'store'])
-            ->whereIn('subjectType', ['clientes', 'prospectos', 'proyectos'])
+            ->whereIn('subjectType', ['clientes', 'prospectos', 'proyectos', 'conversaciones'])
             ->whereNumber('subjectId')
             ->name('admin.activities.store');
         Route::delete('actividades/{activity}', [ActivityController::class, 'destroy'])->name('admin.activities.destroy');

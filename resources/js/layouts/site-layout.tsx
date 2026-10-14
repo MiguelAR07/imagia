@@ -4,6 +4,7 @@ import type { PropsWithChildren } from 'react';
 import { useEffect, useState } from 'react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { BrandWordmark } from '@/components/brand-wordmark';
+import { AssistantWidget } from '@/components/site/assistant-widget';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn } from '@/lib/utils';
 import { whatsappLink } from '@/lib/whatsapp';
@@ -327,11 +328,21 @@ export default function SiteLayout({ children }: PropsWithChildren) {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Escríbenos por WhatsApp"
-                    className="fixed right-5 bottom-5 z-40 flex size-14 items-center justify-center rounded-full bg-[#25d366] text-white shadow-[0_10px_30px_rgba(37,211,102,.35)] transition-transform hover:scale-105"
+                    className={cn(
+                        'fixed right-5 z-40 flex size-14 items-center justify-center rounded-full bg-[#25d366] text-white shadow-[0_10px_30px_rgba(37,211,102,.35)] transition-transform motion-safe:hover:scale-105',
+                        site.assistant ? 'bottom-[5.5rem]' : 'bottom-5',
+                    )}
                     style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
                 >
                     <MessageCircle className="size-6" />
                 </a>
+            )}
+
+            {site.assistant && (
+                <AssistantWidget
+                    whatsapp={site.contact.whatsapp}
+                    brandName={brand.name}
+                />
             )}
         </div>
     );

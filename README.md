@@ -94,7 +94,7 @@ Los permisos de los módulos futuros ya existen en `app/Support/Permissions.php`
 - Dominio y registro de la marca.
 - Impuestos por defecto (se agregan en **Cotizaciones → Impuestos**).
 - Precios de los planes (el catálogo inicial está en borrador y sin precio).
-- Proveedor de IA y presupuesto mensual para el asistente (Fase 5).
+- Clave de IA para el asistente (opcional; sin ella funciona el flujo guiado).
 - Servidor de correo para producción (`MAIL_*` en `.env`).
 
 ## Módulos del panel (Fase 3)
@@ -111,12 +111,29 @@ Los permisos de los módulos futuros ya existen en `app/Support/Permissions.php`
 
 Las imágenes del portafolio y los archivos de proyectos se guardan en `storage/app/private` y se sirven a través de controladores que validan permisos.
 
+## Asistente del sitio (Fase 5)
+
+El botón **«¿Te ayudo?»** del sitio abre un chat que hace una pregunta a la vez, recomienda una solución (landing, web profesional, sistema de gestión o a la medida) y ofrece: solicitar cotización o reunión (crea el prospecto con el resumen), continuar por WhatsApp con el resumen, o ver el resumen.
+
+- **Sin IA (por defecto):** flujo guiado por reglas en `app/Assistant/RulesEngine.php`. Se adapta al objetivo y acepta texto libre.
+- **Con IA (opcional):** agrega en `.env`:
+
+  ```env
+  ANTHROPIC_API_KEY=sk-ant-...
+  ASSISTANT_MODEL=claude-opus-5-5   # se puede cambiar por otro modelo de Claude
+  ASSISTANT_DAILY_LIMIT=300         # respuestas con IA por día; luego sigue el flujo guiado
+  ```
+
+  Las instrucciones del asistente están en `resources/prompts/assistant.md` y solo recibe el catálogo **publicado** (con precio solo si está definido). La respuesta de la IA se valida contra un esquema; si falla, se niega o llega al tope diario, la conversación sigue con el flujo guiado. Se usa el respaldo de servidor (`fallbacks: default`) por si el modelo declina una solicitud.
+- **Seguridad:** la clave nunca llega al navegador; límites por IP (20 mensajes/min, 10 conversaciones/hora), 30 mensajes por conversación y 1.000 caracteres por mensaje; se quita el HTML; el asistente no puede guardar datos ni agendar: solo el formulario con autorización crea el prospecto.
+- **Panel:** **Conversaciones** (`/admin/conversaciones`) muestra transcripción, resumen, prospecto vinculado, seguimiento (nueva / en revisión / atendida) y notas. **Configuración → Asistente** activa o desactiva el chat, cambia el saludo, elige el plan que se muestra con cada recomendación y muestra el estado de la IA.
+
 ## Fases
 
 1. ✅ Marca y experiencia visual
 2. ✅ Base de la plataforma: estructura, base de datos, acceso, roles, configuración
 3. ✅ Administración: clientes, prospectos, proyectos, tareas, catálogo, portafolio, planes, cotizaciones
 4. ✅ Sitio comercial: inicio, servicios, proyectos, planes, proceso, cotizar, contacto, legales, SEO
-5. Asistente inteligente
+5. ✅ Asistente inteligente: flujo guiado + IA opcional, conversaciones en el panel
 6. Seguimiento comercial y financiero
 7. Pruebas y despliegue

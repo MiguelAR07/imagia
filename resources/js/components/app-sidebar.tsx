@@ -6,6 +6,7 @@ import {
     FolderKanban,
     Images,
     LayoutGrid,
+    MessagesSquare,
     ListChecks,
     Package,
     Settings2,
@@ -28,6 +29,7 @@ import {
 import { useCan } from '@/hooks/use-can';
 import { dashboard, home } from '@/routes';
 import { home as catalogHome } from '@/routes/admin/catalog';
+import { index as conversationsIndex } from '@/routes/admin/conversations';
 import { index as clientsIndex } from '@/routes/admin/clients';
 import { index as leadsIndex } from '@/routes/admin/leads';
 import { index as portfolioIndex } from '@/routes/admin/portfolio';
@@ -55,6 +57,16 @@ export function AppSidebar() {
                       title: 'Prospectos',
                       href: leadsIndex(),
                       icon: Target,
+                      matchChildren: true,
+                  },
+              ]
+            : []),
+        ...(can('conversaciones.ver')
+            ? [
+                  {
+                      title: 'Conversaciones',
+                      href: conversationsIndex(),
+                      icon: MessagesSquare,
                       matchChildren: true,
                   },
               ]

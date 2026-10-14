@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Site;
 
+use App\Assistant\Assistant;
 use App\Http\Controllers\Controller;
 use App\Models\Service;
 use App\Support\Settings;
@@ -33,6 +34,7 @@ abstract class SiteController extends Controller
                 'services' => Service::query()->where('is_published', true)->orderBy('sort_order')->get(['name', 'slug']),
                 'logo_parts' => $brand['logo_parts'],
                 'origin' => $brand['origin'],
+                'assistant' => Assistant::enabled(),
             ],
             'seoTitle' => $fullTitle,
         ])->withViewData([

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PortfolioMediaController;
+use App\Http\Controllers\Site\AssistantController;
 use App\Http\Controllers\Site\LeadFormController;
 use App\Http\Controllers\Site\PageController;
 use App\Http\Controllers\Site\SitemapController;
@@ -25,6 +26,15 @@ Route::get('contacto', [LeadFormController::class, 'contact'])->name('site.conta
 Route::post('contacto', [LeadFormController::class, 'storeContact'])->middleware('throttle:5,1')->name('site.contact.store');
 Route::get('gracias', [LeadFormController::class, 'thanks'])->name('site.thanks');
 
+/* Asistente del sitio (JSON). Limitado por IP para evitar abuso. */
+Route::prefix('asistente')->name('assistant.')->middleware('throttle:assistant')->group(function () {
+    Route::post('/', [AssistantController::class, 'start'])->middleware('throttle:assistant-start')->name('start');
+    Route::get('{chatSession}', [AssistantController::class, 'show'])->whereUuid('chatSession')->name('show');
+    Route::post('{chatSession}/mensajes', [AssistantController::class, 'message'])->whereUuid('chatSession')->name('message');
+    Route::post('{chatSession}/contacto', [AssistantController::class, 'contact'])
+        ->whereUuid('chatSession')->middleware('throttle:5,1')->name('contact');
+});
+
 Route::get('sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('robots.txt', fn () => response(implode("\n", [
     'User-agent: *',
@@ -32,6 +42,7 @@ Route::get('robots.txt', fn () => response(implode("\n", [
     'Disallow: /settings',
     'Disallow: /login',
     'Disallow: /gracias',
+    'Disallow: /asistente',
     '',
     'Sitemap: '.route('sitemap'),
 ]), 200, ['Content-Type' => 'text/plain; charset=UTF-8']))->name('robots');

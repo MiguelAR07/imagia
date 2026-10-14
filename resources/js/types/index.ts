@@ -1,3 +1,4 @@
+export type * from './assistant';
 export type * from './auth';
 export type * from './brand';
 export type * from './clients';

@@ -1,11 +1,12 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check, Sparkles } from 'lucide-react';
 import { CtaBand } from '@/components/site/cta-band';
 import { HeroVisual } from '@/components/site/hero-visual';
 import { PlanCard } from '@/components/site/plan-card';
 import { ProcessSteps } from '@/components/site/process-steps';
 import { ProjectCard } from '@/components/site/project-card';
 import { SectionHeading } from '@/components/site/section-heading';
+import { openAssistant } from '@/lib/assistant';
 import { serviceIcon } from '@/lib/service-icons';
 import {
     plans as plansRoute,
@@ -36,7 +37,7 @@ export default function Home({
     process,
     seoTitle,
 }: Props) {
-    const { brand } = usePage<Props>().props;
+    const { brand, site } = usePage<Props>().props;
     const [taglineA, taglineB] = splitTagline(brand.tagline);
 
     return (
@@ -85,6 +86,17 @@ export default function Home({
                                 Solicitar cotización
                             </Link>
                         </div>
+                        {site.assistant && (
+                            <button
+                                type="button"
+                                onClick={openAssistant}
+                                className="inline-flex items-center gap-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                            >
+                                <Sparkles className="size-4 text-brand-cyan" />
+                                ¿No sabes qué necesitas? Responde unas preguntas
+                                y te orientamos
+                            </button>
+                        )}
                     </div>
                     <HeroVisual />
                 </div>

@@ -19,6 +19,8 @@ class Settings
 
     public const LEGAL = 'legal';
 
+    public const ASSISTANT = 'asistente';
+
     private const CACHE_PREFIX = 'settings:';
 
     /**
@@ -67,6 +69,18 @@ class Settings
                 'privacy' => (string) @file_get_contents(resource_path('legal/privacidad.md')),
                 'terms' => (string) @file_get_contents(resource_path('legal/terminos.md')),
                 'updated_at' => null,
+            ],
+            self::ASSISTANT => [
+                'enabled' => true,
+                'use_ai' => true,
+                'greeting' => '',
+                // Plan que se muestra para cada tipo de recomendación (por slug).
+                'plans' => [
+                    'landing' => 'presencia-digital',
+                    'website' => 'web-profesional',
+                    'management' => 'gestion-empresarial',
+                    'custom' => 'solucion-a-medida',
+                ],
             ],
             default => [],
         };
