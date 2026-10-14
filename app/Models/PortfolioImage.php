@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
  * @property string|null $caption
  * @property int $sort_order
  */
-#[Fillable(['path', 'caption', 'sort_order'])]
+#[Fillable(['path', 'caption', 'part', 'sort_order'])]
 class PortfolioImage extends Model
 {
     protected static function booted(): void

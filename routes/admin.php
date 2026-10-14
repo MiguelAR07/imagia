@@ -235,6 +235,7 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
             Route::post('{item}/restaurar', [PortfolioController::class, 'restore'])->withTrashed()->name('restore');
             Route::post('{item}/portada', [PortfolioController::class, 'uploadCover'])->middleware('throttle:30,1')->name('cover');
             Route::post('{item}/imagenes', [PortfolioController::class, 'uploadImages'])->middleware('throttle:30,1')->name('images.store');
+            Route::patch('{item}/imagenes/{image}', [PortfolioController::class, 'updateImage'])->scopeBindings()->name('images.update');
             Route::delete('{item}/imagenes/{image}', [PortfolioController::class, 'destroyImage'])->scopeBindings()->name('images.destroy');
         });
 

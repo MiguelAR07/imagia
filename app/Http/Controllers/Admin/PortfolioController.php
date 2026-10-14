@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -81,6 +82,7 @@ class PortfolioController extends Controller
             'item' => [
                 ...$item->only(['id', 'title', 'slug', 'client_id', 'client_display_name', 'client_name_authorized', 'category', 'summary', 'problem', 'solution', 'public_url', 'status', 'is_confidential', 'is_featured']),
                 'highlights' => $item->highlights ?? [],
+                'parts' => $item->parts ?? [],
                 'completed_on' => $item->completed_on?->toDateString(),
                 'technologies' => $item->technologies->pluck('name'),
                 'cover_url' => $item->cover_path ? route('portfolio.cover', $item).'?v='.$item->updated_at?->timestamp : null,
@@ -88,6 +90,7 @@ class PortfolioController extends Controller
                     'id' => $img->id,
                     'url' => route('portfolio.image', $img),
                     'caption' => $img->caption,
+                    'part' => $img->part,
                 ]),
                 'testimonials' => $item->testimonials->map(fn (Testimonial $t) => [
                     ...$t->only(['author_name', 'author_role', 'quote', 'authorization_note', 'is_published']),
@@ -192,15 +195,31 @@ class PortfolioController extends Controller
 
     public function uploadImages(Request $request, PortfolioItem $item): RedirectResponse
     {
-        $request->validate(['images' => ['required', 'array', 'max:12'], 'images.*' => self::IMAGE_RULES], $this->imageMessages('images.*'));
+        $data = $request->validate([
+            'images' => ['required', 'array', 'max:12'],
+            'images.*' => self::IMAGE_RULES,
+            'part' => ['nullable', Rule::in(array_keys(PortfolioItem::PART_TYPES))],
+        ], $this->imageMessages('images.*'));
 
         $order = (int) $item->images()->max('sort_order');
         foreach ($request->file('images') as $file) {
             $item->images()->create([
                 'path' => $file->store("portfolio/{$item->id}", 'local'),
+                'part' => $data['part'] ?? null,
                 'sort_order' => ++$order,
             ]);
         }
+
+        return back();
+    }
+
+    /** Cambia la descripción de una imagen o la parte del sistema a la que pertenece. */
+    public function updateImage(Request $request, PortfolioItem $item, PortfolioImage $image): RedirectResponse
+    {
+        $image->update($request->validate([
+            'caption' => ['nullable', 'string', 'max:160'],
+            'part' => ['nullable', Rule::in(array_keys(PortfolioItem::PART_TYPES))],
+        ]));
 
         return back();
     }
@@ -230,7 +249,19 @@ class PortfolioController extends Controller
      */
     private function itemFields(array $data): array
     {
-        return collect($data)->except(['technologies', 'testimonials'])->all() + ['highlights' => []];
+        $fields = collect($data)->except(['technologies', 'testimonials'])->all() + ['highlights' => [], 'parts' => []];
+
+        // Sin texto ni funciones, una parte no aporta nada: se descarta.
+        $fields['parts'] = array_values(array_filter(
+            array_map(fn (array $p) => [
+                'type' => $p['type'],
+                'title' => filled($p['title'] ?? null) ? trim($p['title']) : null,
+                'description' => filled($p['description'] ?? null) ? trim($p['description']) : null,
+                'features' => $p['features'] ?? [],
+            ], $fields['parts']),
+        ));
+
+        return $fields;
     }
 
     /**
@@ -258,6 +289,7 @@ class PortfolioController extends Controller
     {
         return [
             'categories' => Options::from(Project::CATEGORIES),
+            'partTypes' => Options::from(PortfolioItem::PART_TYPES),
             'clients' => Client::query()->orderBy('name')->get(['id', 'name'])
                 ->map(fn (Client $c) => ['value' => (string) $c->id, 'label' => $c->name]),
             'technologies' => Technology::query()->orderBy('name')->pluck('name'),

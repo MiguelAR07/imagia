@@ -50,6 +50,64 @@ class PortfolioTest extends TestCase
         return $item;
     }
 
+    public function test_parts_of_the_system_are_saved_and_cleaned()
+    {
+        $item = $this->itemWithCover();
+
+        $this->actingAs($this->admin())->put(route('admin.portfolio.update', $item), $this->payload([
+            'parts' => [
+                ['type' => 'web', 'title' => ' Sitio web ', 'description' => 'Presenta las cabañas.', 'features' => ['Galería', '']],
+                ['type' => 'admin', 'title' => '', 'description' => '', 'features' => ['Reservas', 'Pagos']],
+            ],
+        ]))->assertSessionHasNoErrors();
+
+        $parts = $item->refresh()->parts;
+        $this->assertSame(['type' => 'web', 'title' => 'Sitio web', 'description' => 'Presenta las cabañas.', 'features' => ['Galería']], $parts[0]);
+        $this->assertSame(['type' => 'admin', 'title' => null, 'description' => null, 'features' => ['Reservas', 'Pagos']], $parts[1]);
+
+        // Cada parte una sola vez y solo de los tipos conocidos.
+        $this->actingAs($this->admin())->put(route('admin.portfolio.update', $item), $this->payload([
+            'parts' => [['type' => 'web', 'features' => []], ['type' => 'web', 'features' => []]],
+        ]))->assertSessionHasErrors('parts.1.type');
+        $this->actingAs($this->admin())->put(route('admin.portfolio.update', $item), $this->payload([
+            'parts' => [['type' => 'otro', 'features' => []]],
+        ]))->assertSessionHasErrors('parts.0.type');
+    }
+
+    public function test_images_are_assigned_to_parts_and_grouped_on_the_public_page()
+    {
+        $item = $this->itemWithCover([
+            'status' => 'published',
+            'parts' => [['type' => 'admin', 'title' => null, 'description' => 'Panel interno', 'features' => ['Reservas']]],
+        ]);
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->post(route('admin.portfolio.images.store', $item), [
+            'images' => [UploadedFile::fake()->image('panel.png')],
+            'part' => 'admin',
+        ])->assertSessionHasNoErrors();
+        $this->actingAs($admin)->post(route('admin.portfolio.images.store', $item), [
+            'images' => [UploadedFile::fake()->image('general.png')],
+        ]);
+
+        $general = $item->images()->whereNull('part')->first();
+        $this->actingAs($admin)->patch(route('admin.portfolio.images.update', [$item, $general]), [
+            'caption' => 'Vista general', 'part' => null,
+        ])->assertSessionHasNoErrors();
+        $this->assertSame('Vista general', $general->refresh()->caption);
+
+        auth()->guard('web')->logout();
+        $this->get(route('site.project', $item->slug))
+            ->assertInertia(fn ($page) => $page
+                ->where('project.parts.0.label', 'Panel administrativo')
+                ->has('project.parts.0.images', 1)
+                ->has('project.images', 1)
+                ->where('project.images.0.caption', 'Vista general'));
+
+        $this->get(route('site.projects'))
+            ->assertInertia(fn ($page) => $page->where('projects.0.parts', ['Panel administrativo']));
+    }
+
     public function test_new_items_are_drafts_and_technologies_are_reused()
     {
         Technology::query()->create(['name' => 'Laravel']);

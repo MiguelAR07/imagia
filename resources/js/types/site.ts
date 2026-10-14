@@ -63,9 +63,21 @@ export type PublicProjectCard = {
     cover_url: string;
     technologies: string[];
     year: number | null;
+    /** Partes del sistema entregado («Sitio web», «Panel administrativo»…). */
+    parts: string[];
 };
 
-export type PublicProject = PublicProjectCard & {
+export type PublicProjectPart = {
+    type: string;
+    label: string;
+    title: string | null;
+    description: string | null;
+    features: string[];
+    images: { url: string; caption: string | null }[];
+};
+
+export type PublicProject = Omit<PublicProjectCard, 'parts'> & {
+    parts: PublicProjectPart[];
     client: string | null;
     problem: string | null;
     solution: string | null;

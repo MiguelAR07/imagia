@@ -27,6 +27,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $problem
  * @property string|null $solution
  * @property list<string>|null $highlights
+ * @property list<array{type: string, title: string|null, description: string|null, features: list<string>}>|null $parts
  * @property Carbon|null $completed_on
  * @property string|null $public_url
  * @property string $status
@@ -36,12 +37,22 @@ use Illuminate\Support\Carbon;
  */
 #[Fillable([
     'client_id', 'title', 'slug', 'client_display_name', 'client_name_authorized', 'category', 'cover_path', 'summary',
-    'problem', 'solution', 'highlights', 'completed_on', 'public_url', 'status', 'is_confidential',
+    'problem', 'solution', 'highlights', 'parts', 'completed_on', 'public_url', 'status', 'is_confidential',
     'is_featured', 'sort_order',
 ])]
 class PortfolioItem extends Model
 {
     use HasUniqueSlug, SoftDeletes;
+
+    /** Partes que puede tener un sistema entregado. */
+    public const PART_TYPES = [
+        'web' => 'Sitio web',
+        'booking' => 'Reservas en línea',
+        'admin' => 'Panel administrativo',
+        'client_portal' => 'Portal de clientes',
+        'app' => 'App móvil',
+        'automation' => 'Automatización',
+    ];
 
     /**
      * @return array<string, string>
@@ -51,6 +62,7 @@ class PortfolioItem extends Model
         return [
             'client_name_authorized' => 'boolean',
             'highlights' => 'array',
+            'parts' => 'array',
             'completed_on' => 'date',
             'is_confidential' => 'boolean',
             'is_featured' => 'boolean',

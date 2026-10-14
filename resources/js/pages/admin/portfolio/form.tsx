@@ -18,6 +18,8 @@ import { ConfirmDialog } from '@/components/confirm-dialog';
 import { FormField } from '@/components/form-field';
 import InputError from '@/components/input-error';
 import { ListEditor } from '@/components/list-editor';
+import type { PortfolioPart } from '@/components/portfolio/parts-editor';
+import { PartsEditor } from '@/components/portfolio/parts-editor';
 import { OptionSelect } from '@/components/option-select';
 import { StatusBadge } from '@/components/status-badge';
 import { TagsInput } from '@/components/tags-input';
@@ -40,6 +42,7 @@ import {
 import {
     destroy as destroyImage,
     store as storeImages,
+    update as updateImage,
 } from '@/routes/admin/portfolio/images';
 import type { Option } from '@/types';
 
@@ -68,10 +71,11 @@ type Item = {
     is_confidential: boolean;
     is_featured: boolean;
     highlights: string[];
+    parts: PortfolioPart[];
     completed_on: string | null;
     technologies: string[];
     cover_url: string | null;
-    images: { id: number; url: string; caption: string | null }[];
+    images: GalleryImage[];
     testimonials: TestimonialForm[];
     is_public: boolean;
 };
@@ -79,13 +83,22 @@ type Item = {
 type Props = {
     item: Item | null;
     categories: Option[];
+    partTypes: Option[];
     clients: Option[];
     technologies: string[];
+};
+
+type GalleryImage = {
+    id: number;
+    url: string;
+    caption: string | null;
+    part: string | null;
 };
 
 export default function PortfolioForm({
     item,
     categories,
+    partTypes,
     clients,
     technologies,
 }: Props) {
@@ -99,6 +112,7 @@ export default function PortfolioForm({
         problem: item?.problem ?? '',
         solution: item?.solution ?? '',
         highlights: item?.highlights ?? [],
+        parts: item?.parts ?? ([] as PortfolioPart[]),
         technologies: item?.technologies ?? [],
         completed_on: item?.completed_on ?? '',
         public_url: item?.public_url ?? '',
@@ -304,6 +318,24 @@ export default function PortfolioForm({
                                     }
                                 />
                             </FormField>
+                        </fieldset>
+
+                        <fieldset className="space-y-3">
+                            <legend className="text-base font-semibold">
+                                Partes del sistema
+                            </legend>
+                            <p className="text-sm text-muted-foreground">
+                                Si entregaste varias cosas (por ejemplo, el
+                                sitio web y el panel administrativo),
+                                descríbelas por separado. En la galería eliges a
+                                qué parte pertenece cada imagen.
+                            </p>
+                            <PartsEditor
+                                parts={form.data.parts}
+                                types={partTypes}
+                                errors={errors}
+                                onChange={(v) => form.setData('parts', v)}
+                            />
                         </fieldset>
 
                         <fieldset className="grid gap-5 sm:grid-cols-2">
@@ -694,7 +726,18 @@ export default function PortfolioForm({
                     </aside>
                 </form>
 
-                {item && <Gallery itemId={item.id} images={item.images} />}
+                {item && (
+                    <Gallery
+                        itemId={item.id}
+                        images={item.images}
+                        parts={(item.parts ?? []).map((p) => ({
+                            value: p.type,
+                            label:
+                                partTypes.find((t) => t.value === p.type)
+                                    ?.label ?? p.type,
+                        }))}
+                    />
+                )}
             </div>
         </>
     );
@@ -777,20 +820,23 @@ function CoverUpload({ itemId, url }: { itemId: number; url: string | null }) {
 function Gallery({
     itemId,
     images,
+    parts,
 }: {
     itemId: number;
-    images: { id: number; url: string; caption: string | null }[];
+    images: GalleryImage[];
+    parts: Option[];
 }) {
     const input = useRef<HTMLInputElement>(null);
     const [error, setError] = useState<string | null>(null);
     const [busy, setBusy] = useState(false);
+    const [uploadPart, setUploadPart] = useState('');
 
     const upload = (files: FileList) => {
         setBusy(true);
         setError(null);
         router.post(
             storeImages(itemId).url,
-            { images: Array.from(files) },
+            { images: Array.from(files), part: uploadPart || null },
             {
                 forceFormData: true,
                 preserveScroll: true,
@@ -809,36 +855,55 @@ function Gallery({
         );
     };
 
+    const save = (img: GalleryImage, data: Partial<GalleryImage>) =>
+        router.patch(
+            updateImage({ item: itemId, image: img.id }).url,
+            { caption: img.caption, part: img.part, ...data },
+            { preserveScroll: true, preserveState: true },
+        );
+
     return (
         <section className="space-y-4 border-t pt-8">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
                     <h2 className="text-base font-semibold">Galería</h2>
                     <p className="text-sm text-muted-foreground">
                         Capturas de pantallas, vistas del celular, detalles del
-                        diseño.
+                        diseño. Guarda las partes del sistema antes de asignar
+                        imágenes.
                     </p>
                 </div>
-                <input
-                    ref={input}
-                    type="file"
-                    multiple
-                    accept="image/jpeg,image/png,image/webp"
-                    className="sr-only"
-                    aria-label="Imágenes de la galería"
-                    onChange={(e) =>
-                        e.target.files?.length && upload(e.target.files)
-                    }
-                />
-                <Button
-                    type="button"
-                    variant="outline"
-                    disabled={busy}
-                    onClick={() => input.current?.click()}
-                >
-                    <ImagePlus className="size-4" />
-                    {busy ? 'Subiendo…' : 'Agregar imágenes'}
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                    {parts.length > 0 && (
+                        <OptionSelect
+                            value={uploadPart}
+                            options={parts}
+                            allLabel="Subir a: galería general"
+                            onChange={setUploadPart}
+                            className="w-60"
+                        />
+                    )}
+                    <input
+                        ref={input}
+                        type="file"
+                        multiple
+                        accept="image/jpeg,image/png,image/webp"
+                        className="sr-only"
+                        aria-label="Imágenes de la galería"
+                        onChange={(e) =>
+                            e.target.files?.length && upload(e.target.files)
+                        }
+                    />
+                    <Button
+                        type="button"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() => input.current?.click()}
+                    >
+                        <ImagePlus className="size-4" />
+                        {busy ? 'Subiendo…' : 'Agregar imágenes'}
+                    </Button>
+                </div>
             </div>
             {error && <InputError message={error} />}
             {images.length === 0 ? (
@@ -846,47 +911,77 @@ function Gallery({
                     Aún no hay imágenes en la galería.
                 </p>
             ) : (
-                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {images.map((img) => (
                         <li
                             key={img.id}
-                            className="group relative aspect-[4/3] overflow-hidden rounded-lg border bg-muted"
+                            className="overflow-hidden rounded-lg border bg-card"
                         >
-                            <img
-                                src={img.url}
-                                alt={img.caption ?? ''}
-                                loading="lazy"
-                                className="size-full object-cover"
-                            />
-                            <ConfirmDialog
-                                trigger={
-                                    <Button
-                                        type="button"
-                                        size="icon"
-                                        variant="secondary"
-                                        aria-label="Eliminar imagen"
-                                        className="absolute top-2 right-2 size-8 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
-                                    >
-                                        <Trash2 className="size-4" />
-                                    </Button>
-                                }
-                                title="Eliminar imagen"
-                                description="Se borrará de la galería."
-                                confirmLabel="Eliminar"
-                                destructive
-                                onConfirm={(done) =>
-                                    router.delete(
-                                        destroyImage({
-                                            item: itemId,
-                                            image: img.id,
-                                        }).url,
-                                        {
-                                            preserveScroll: true,
-                                            onFinish: done,
-                                        },
-                                    )
-                                }
-                            />
+                            <div className="group relative aspect-[16/10] bg-muted">
+                                <img
+                                    src={img.url}
+                                    alt={img.caption ?? ''}
+                                    loading="lazy"
+                                    className="size-full object-cover object-top"
+                                />
+                                <ConfirmDialog
+                                    trigger={
+                                        <Button
+                                            type="button"
+                                            size="icon"
+                                            variant="secondary"
+                                            aria-label="Eliminar imagen"
+                                            className="absolute top-2 right-2 size-8 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
+                                        >
+                                            <Trash2 className="size-4" />
+                                        </Button>
+                                    }
+                                    title="Eliminar imagen"
+                                    description="Se borrará de la galería."
+                                    confirmLabel="Eliminar"
+                                    destructive
+                                    onConfirm={(done) =>
+                                        router.delete(
+                                            destroyImage({
+                                                item: itemId,
+                                                image: img.id,
+                                            }).url,
+                                            {
+                                                preserveScroll: true,
+                                                onFinish: done,
+                                            },
+                                        )
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2 p-3">
+                                <Input
+                                    aria-label="Descripción de la imagen"
+                                    defaultValue={img.caption ?? ''}
+                                    placeholder="Descripción (opcional)"
+                                    maxLength={160}
+                                    onBlur={(e) => {
+                                        if (
+                                            e.target.value !==
+                                            (img.caption ?? '')
+                                        ) {
+                                            save(img, {
+                                                caption: e.target.value || null,
+                                            });
+                                        }
+                                    }}
+                                />
+                                {parts.length > 0 && (
+                                    <OptionSelect
+                                        value={img.part ?? ''}
+                                        options={parts}
+                                        allLabel="Galería general"
+                                        onChange={(v) =>
+                                            save(img, { part: v || null })
+                                        }
+                                    />
+                                )}
+                            </div>
                         </li>
                     ))}
                 </ul>

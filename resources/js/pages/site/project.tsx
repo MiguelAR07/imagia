@@ -1,18 +1,49 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, ArrowUpRight, Check, Quote, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import {
+    ArrowLeft,
+    ArrowUpRight,
+    CalendarCheck,
+    Check,
+    Globe,
+    LayoutDashboard,
+    Quote,
+    Smartphone,
+    Users,
+    Workflow,
+    X,
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { CtaBand } from '@/components/site/cta-band';
 import { ProjectCard } from '@/components/site/project-card';
 import { SectionHeading } from '@/components/site/section-heading';
 import { projects } from '@/routes/site';
 import type { PublicProject, PublicProjectCard, SiteProps } from '@/types';
 
+const PART_ICONS: Record<string, LucideIcon> = {
+    web: Globe,
+    booking: CalendarCheck,
+    admin: LayoutDashboard,
+    client_portal: Users,
+    app: Smartphone,
+    automation: Workflow,
+};
+
+type Image = { url: string; caption: string | null };
+
 export default function ProjectPage({
     project,
     related,
     seoTitle,
 }: SiteProps & { project: PublicProject; related: PublicProjectCard[] }) {
+    // Todas las imágenes en orden (por partes y luego la galería general) para el visor.
+    const gallery = useMemo<Image[]>(
+        () => [...project.parts.flatMap((p) => p.images), ...project.images],
+        [project],
+    );
     const [zoom, setZoom] = useState<number | null>(null);
+    const openImage = (img: Image) =>
+        setZoom(gallery.findIndex((g) => g.url === img.url));
 
     useEffect(() => {
         if (zoom === null) {
@@ -23,22 +54,17 @@ export default function ProjectPage({
             if (e.key === 'Escape') {
                 setZoom(null);
             } else if (e.key === 'ArrowRight') {
-                setZoom((z) =>
-                    z === null ? z : (z + 1) % project.images.length,
-                );
+                setZoom((z) => (z === null ? z : (z + 1) % gallery.length));
             } else if (e.key === 'ArrowLeft') {
                 setZoom((z) =>
-                    z === null
-                        ? z
-                        : (z - 1 + project.images.length) %
-                          project.images.length,
+                    z === null ? z : (z - 1 + gallery.length) % gallery.length,
                 );
             }
         };
         window.addEventListener('keydown', onKey);
 
         return () => window.removeEventListener('keydown', onKey);
-    }, [zoom, project.images.length]);
+    }, [zoom, gallery.length]);
 
     return (
         <>
@@ -64,6 +90,28 @@ export default function ProjectPage({
                     <p className="max-w-3xl text-lg text-muted-foreground md:text-xl">
                         {project.summary}
                     </p>
+                    {project.parts.length > 0 && (
+                        <ul
+                            aria-label="Qué incluye"
+                            className="flex flex-wrap gap-2"
+                        >
+                            {project.parts.map((p) => {
+                                const Icon = PART_ICONS[p.type] ?? Check;
+
+                                return (
+                                    <li key={p.type}>
+                                        <a
+                                            href={`#parte-${p.type}`}
+                                            className="inline-flex items-center gap-2 rounded-full border bg-card px-3.5 py-1.5 text-sm font-medium transition-colors hover:border-brand-cyan"
+                                        >
+                                            <Icon className="size-4 text-brand-cyan" />
+                                            {p.label}
+                                        </a>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    )}
                     {project.public_url && (
                         <a
                             href={project.public_url}
@@ -81,7 +129,7 @@ export default function ProjectPage({
                     <img
                         src={project.cover_url}
                         alt={`Vista principal de ${project.title}`}
-                        className="aspect-[16/9] w-full rounded-3xl border object-cover"
+                        className="aspect-[16/9] w-full rounded-3xl border object-cover object-top"
                     />
                 </div>
 
@@ -132,7 +180,7 @@ export default function ProjectPage({
                         {project.highlights.length > 0 && (
                             <div className="rounded-2xl border bg-card p-6">
                                 <h2 className="mb-4 text-lg font-bold">
-                                    Funcionalidades principales
+                                    Resultados y puntos clave
                                 </h2>
                                 <ul className="space-y-2.5 text-sm">
                                     {project.highlights.map((h) => (
@@ -164,41 +212,80 @@ export default function ProjectPage({
                     </aside>
                 </section>
 
+                {/* Cada parte del sistema: web, reservas, panel administrativo… */}
+                {project.parts.map((part, index) => {
+                    const Icon = PART_ICONS[part.type] ?? Check;
+
+                    return (
+                        <section
+                            key={part.type}
+                            id={`parte-${part.type}`}
+                            className="scroll-mt-20 border-t"
+                        >
+                            <div className="mx-auto max-w-6xl space-y-8 px-5 py-16 md:px-8">
+                                <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]">
+                                    <div className="space-y-4">
+                                        <p className="inline-flex items-center gap-2 font-mono text-xs tracking-[0.16em] text-brand-cyan uppercase">
+                                            <Icon className="size-4" />
+                                            {String(index + 1).padStart(
+                                                2,
+                                                '0',
+                                            )}{' '}
+                                            · {part.label}
+                                        </p>
+                                        <h2 className="text-3xl font-bold tracking-tight">
+                                            {part.title ?? part.label}
+                                        </h2>
+                                        {part.description && (
+                                            <p className="text-lg whitespace-pre-line text-muted-foreground">
+                                                {part.description}
+                                            </p>
+                                        )}
+                                    </div>
+                                    {part.features.length > 0 && (
+                                        <ul className="grid content-start gap-2.5 sm:grid-cols-2">
+                                            {part.features.map((f) => (
+                                                <li
+                                                    key={f}
+                                                    className="flex gap-2.5 rounded-xl border bg-card px-4 py-3 text-sm"
+                                                >
+                                                    <Check className="mt-0.5 size-4 shrink-0 text-success" />
+                                                    {f}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                                {part.images.length > 0 && (
+                                    <Gallery
+                                        images={part.images}
+                                        title={`${part.label} de ${project.title}`}
+                                        onOpen={openImage}
+                                    />
+                                )}
+                            </div>
+                        </section>
+                    );
+                })}
+
                 {project.images.length > 0 && (
                     <section className="mx-auto max-w-6xl space-y-6 px-5 pb-16 md:px-8">
                         <h2 className="text-2xl font-bold">Galería</h2>
-                        <ul className="grid grid-cols-2 gap-4 md:grid-cols-3">
-                            {project.images.map((img, i) => (
-                                <li key={img.url}>
-                                    <button
-                                        type="button"
-                                        onClick={() => setZoom(i)}
-                                        className="block w-full overflow-hidden rounded-xl border"
-                                        aria-label={`Ampliar imagen ${i + 1}`}
-                                    >
-                                        <img
-                                            src={img.url}
-                                            alt={
-                                                img.caption ??
-                                                `Imagen ${i + 1} de ${project.title}`
-                                            }
-                                            loading="lazy"
-                                            className="aspect-[4/3] w-full object-cover transition-transform duration-500 hover:scale-[1.03]"
-                                        />
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
+                        <Gallery
+                            images={project.images}
+                            title={project.title}
+                            onOpen={openImage}
+                        />
                     </section>
                 )}
             </article>
 
-            {zoom !== null && (
+            {zoom !== null && gallery[zoom] && (
                 <div
                     role="dialog"
                     aria-modal="true"
                     aria-label="Imagen ampliada"
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+                    className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-black/90 p-4"
                     onClick={() => setZoom(null)}
                 >
                     <button
@@ -210,11 +297,16 @@ export default function ProjectPage({
                         <X className="size-5" />
                     </button>
                     <img
-                        src={project.images[zoom].url}
-                        alt={project.images[zoom].caption ?? ''}
-                        className="max-h-full max-w-full rounded-lg object-contain"
+                        src={gallery[zoom].url}
+                        alt={gallery[zoom].caption ?? ''}
+                        className="max-h-[85vh] max-w-full rounded-lg object-contain"
                         onClick={(e) => e.stopPropagation()}
                     />
+                    {gallery[zoom].caption && (
+                        <p className="text-sm text-white/80">
+                            {gallery[zoom].caption}
+                        </p>
+                    )}
                 </div>
             )}
 
@@ -233,5 +325,46 @@ export default function ProjectPage({
 
             <CtaBand title="¿Quieres algo así para tu negocio?" />
         </>
+    );
+}
+
+function Gallery({
+    images,
+    title,
+    onOpen,
+}: {
+    images: Image[];
+    title: string;
+    onOpen: (img: Image) => void;
+}) {
+    return (
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {images.map((img, i) => (
+                <li key={img.url}>
+                    <figure className="space-y-2">
+                        <button
+                            type="button"
+                            onClick={() => onOpen(img)}
+                            className="block w-full overflow-hidden rounded-xl border bg-card"
+                            aria-label={`Ampliar: ${img.caption ?? `imagen ${i + 1}`}`}
+                        >
+                            <img
+                                src={img.url}
+                                alt={
+                                    img.caption ?? `Imagen ${i + 1} de ${title}`
+                                }
+                                loading="lazy"
+                                className="aspect-[16/10] w-full bg-muted/40 object-contain transition-transform duration-500 motion-safe:hover:scale-[1.02]"
+                            />
+                        </button>
+                        {img.caption && (
+                            <figcaption className="text-sm text-muted-foreground">
+                                {img.caption}
+                            </figcaption>
+                        )}
+                    </figure>
+                </li>
+            ))}
+        </ul>
     );
 }

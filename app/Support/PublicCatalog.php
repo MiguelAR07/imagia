@@ -130,6 +130,8 @@ class PublicCatalog
             'cover_url' => route('portfolio.cover', $i),
             'technologies' => $i->technologies->pluck('name'),
             'year' => $i->completed_on?->year,
+            // «Sitio web · Panel administrativo»: lo que incluye el sistema entregado.
+            'parts' => collect($i->parts ?? [])->map(fn (array $p) => PortfolioItem::PART_TYPES[$p['type']] ?? $p['type'])->values(),
         ];
     }
 
@@ -148,13 +150,32 @@ class PublicCatalog
             'highlights' => $i->highlights ?? [],
             'public_url' => $i->public_url,
             'completed_on' => $i->completed_on?->toDateString(),
-            'images' => $i->images->map(fn (PortfolioImage $img) => ['url' => route('portfolio.image', $img), 'caption' => $img->caption]),
+            // Imágenes que no pertenecen a una parte definida van a la galería general.
+            'images' => $i->images
+                ->filter(fn (PortfolioImage $img) => $img->part === null || ! collect($i->parts ?? [])->contains('type', $img->part))
+                ->map(fn (PortfolioImage $img) => self::image($img))->values(),
+            'parts' => collect($i->parts ?? [])->map(fn (array $p) => [
+                'type' => $p['type'],
+                'label' => PortfolioItem::PART_TYPES[$p['type']] ?? $p['type'],
+                'title' => $p['title'] ?? null,
+                'description' => $p['description'] ?? null,
+                'features' => $p['features'] ?? [],
+                'images' => $i->images->where('part', $p['type'])->map(fn (PortfolioImage $img) => self::image($img))->values(),
+            ])->values(),
             // Solo testimonios publicados y con autorización registrada.
             'testimonials' => $i->testimonials
                 ->filter(fn (Testimonial $t) => $t->is_published && $t->authorized_at !== null)
                 ->map(fn (Testimonial $t) => $t->only(['author_name', 'author_role', 'quote']))
                 ->values(),
         ];
+    }
+
+    /**
+     * @return array{url: string, caption: string|null}
+     */
+    private static function image(PortfolioImage $img): array
+    {
+        return ['url' => route('portfolio.image', $img), 'caption' => $img->caption];
     }
 
     /**

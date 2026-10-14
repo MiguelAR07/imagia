@@ -15,7 +15,7 @@ export function ProjectCard({ item }: { item: PublicProjectCard }) {
                     src={item.cover_url}
                     alt={`Vista del proyecto ${item.title}`}
                     loading="lazy"
-                    className="size-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                    className="size-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]"
                 />
                 <span className="absolute top-3 left-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
                     {item.category_label}
@@ -29,6 +29,18 @@ export function ProjectCard({ item }: { item: PublicProjectCard }) {
                 <p className="line-clamp-2 text-sm text-muted-foreground">
                     {item.summary}
                 </p>
+                {item.parts.length > 0 && (
+                    <ul className="flex flex-wrap gap-1.5 pt-1">
+                        {item.parts.map((part) => (
+                            <li
+                                key={part}
+                                className="rounded-full border border-brand-cyan/30 bg-brand-cyan/10 px-2 py-0.5 text-[11px] font-medium text-brand-cyan"
+                            >
+                                {part}
+                            </li>
+                        ))}
+                    </ul>
+                )}
                 {item.technologies.length > 0 && (
                     <p className="pt-1 font-mono text-[11px] text-muted-foreground/80">
                         {item.technologies.slice(0, 4).join(' · ')}

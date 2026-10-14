@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\PortfolioItem;
 use App\Models\Project;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -31,6 +32,13 @@ class PortfolioRequest extends FormRequest
             'is_confidential' => ['boolean'],
             'is_featured' => ['boolean'],
 
+            'parts' => ['array', 'max:6'],
+            'parts.*.type' => ['required', 'distinct', Rule::in(array_keys(PortfolioItem::PART_TYPES))],
+            'parts.*.title' => ['nullable', 'string', 'max:80'],
+            'parts.*.description' => ['nullable', 'string', 'max:2000'],
+            'parts.*.features' => ['array', 'max:30'],
+            'parts.*.features.*' => ['required', 'string', 'max:160'],
+
             'testimonials' => ['array', 'max:10'],
             'testimonials.*.author_name' => ['required', 'string', 'max:255'],
             'testimonials.*.author_role' => ['nullable', 'string', 'max:255'],
@@ -49,6 +57,7 @@ class PortfolioRequest extends FormRequest
         return [
             'testimonials.*.authorized_at.required_if_accepted' => 'Para publicar un testimonio indica cuándo autorizó el cliente su publicación.',
             'public_url.url' => 'Escribe el enlace completo, empezando por https://',
+            'parts.*.type.distinct' => 'Cada parte del sistema solo puede aparecer una vez.',
         ];
     }
 
@@ -59,6 +68,10 @@ class PortfolioRequest extends FormRequest
         $this->merge([
             'highlights' => $clean($this->input('highlights', [])),
             'technologies' => array_values(array_unique(array_map('trim', $clean($this->input('technologies', []))))),
+            'parts' => array_map(fn ($part) => [
+                ...(array) $part,
+                'features' => $clean(((array) $part)['features'] ?? []),
+            ], array_values((array) $this->input('parts', []))),
         ]);
     }
 }
