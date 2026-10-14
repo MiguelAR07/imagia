@@ -52,7 +52,9 @@ import {
     store as storeMilestone,
     update as updateMilestone,
 } from '@/routes/admin/projects/milestones';
+import { ProjectFinancePanel } from '@/components/finance/project-finance';
 import type {
+    ProjectFinance,
     ActivityItem,
     DeliverableItem,
     FileItem,
@@ -69,6 +71,7 @@ type Props = {
     deliverables: DeliverableItem[];
     files: FileItem[];
     activities: ActivityItem[];
+    finance: ProjectFinance | null;
     options: ProjectOptions & {
         users: Option[];
         task_statuses: Option[];
@@ -77,7 +80,13 @@ type Props = {
     };
 };
 
-type Tab = 'tasks' | 'milestones' | 'deliverables' | 'files' | 'history';
+type Tab =
+    | 'tasks'
+    | 'milestones'
+    | 'deliverables'
+    | 'files'
+    | 'money'
+    | 'history';
 
 export default function ProjectShow({
     project,
@@ -86,6 +95,7 @@ export default function ProjectShow({
     deliverables,
     files,
     activities,
+    finance,
     options,
 }: Props) {
     const can = useCan();
@@ -128,6 +138,15 @@ export default function ProjectShow({
             count: deliverables.length,
         },
         { id: 'files', label: 'Archivos', count: files.length },
+        ...(finance
+            ? [
+                  {
+                      id: 'money' as Tab,
+                      label: 'Pagos y gastos',
+                      count: finance.payments.length,
+                  },
+              ]
+            : []),
         { id: 'history', label: 'Historial' },
     ];
 
@@ -351,6 +370,16 @@ export default function ProjectShow({
                             projectId={project.id}
                             files={files}
                             canManage={canManage}
+                        />
+                    )}
+                    {tab === 'money' && finance && (
+                        <ProjectFinancePanel
+                            projectId={project.id}
+                            currency={project.currency}
+                            finance={finance}
+                            canManage={
+                                can('finanzas.gestionar') && !project.archived
+                            }
                         />
                     )}
                     {tab === 'history' && (

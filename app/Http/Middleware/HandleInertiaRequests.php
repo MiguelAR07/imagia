@@ -53,6 +53,18 @@ class HandleInertiaRequests extends Middleware
                 'roles' => fn () => $user?->getRoleNames()->values() ?? [],
                 'permissions' => fn () => $user === null ? [] : $user->getAllPermissions()->pluck('name')->values(),
             ],
+            // Avisos de la campana: los 8 más recientes y cuántos faltan por leer.
+            'notifications' => fn () => $user === null ? null : [
+                'unread' => $user->unreadNotifications()->count(),
+                'items' => $user->notifications()->limit(8)->get()->map(fn ($n) => [
+                    'id' => $n->id,
+                    'title' => $n->data['title'] ?? '',
+                    'body' => $n->data['body'] ?? '',
+                    'icon' => $n->data['icon'] ?? null,
+                    'read' => $n->read_at !== null,
+                    'created_at' => $n->created_at?->toIso8601String(),
+                ]),
+            ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

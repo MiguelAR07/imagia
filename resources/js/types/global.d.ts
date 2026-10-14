@@ -1,5 +1,6 @@
 import type { Auth } from '@/types/auth';
 import type { SharedBrand } from '@/types/brand';
+import type { SharedNotifications } from '@/types/common';
 
 declare module 'react' {
     interface InputHTMLAttributes<T> {
@@ -14,6 +15,7 @@ declare module '@inertiajs/core' {
             brand: SharedBrand;
             auth: Auth;
             sidebarOpen: boolean;
+            notifications: SharedNotifications | null;
             [key: string]: unknown;
         };
     }

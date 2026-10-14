@@ -12,8 +12,10 @@ use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\ContactSettingsController;
 use App\Http\Controllers\Admin\ConversationController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FinanceController;
 use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\LegalSettingsController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\PipelineStageController;
 use App\Http\Controllers\Admin\PortfolioController;
 use App\Http\Controllers\Admin\ProjectController;
@@ -31,6 +33,9 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
     ->prefix('admin')
     ->group(function () {
         Route::get('/', DashboardController::class)->name('dashboard');
+
+        Route::get('notificaciones/{id}', [NotificationController::class, 'open'])->whereUuid('id')->name('admin.notifications.open');
+        Route::post('notificaciones/leidas', [NotificationController::class, 'readAll'])->name('admin.notifications.read');
 
         Route::middleware('permission:'.Permissions::MANAGE_BRAND)->group(function () {
             Route::get('configuracion', fn () => to_route('admin.brand.edit'))->name('admin.settings');
@@ -97,6 +102,24 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
             Route::put('embudo/etapas/orden', [PipelineStageController::class, 'reorder'])->name('admin.stages.reorder');
             Route::put('embudo/etapas/{stage}', [PipelineStageController::class, 'update'])->name('admin.stages.update');
             Route::delete('embudo/etapas/{stage}', [PipelineStageController::class, 'destroy'])->name('admin.stages.destroy');
+        });
+
+        /* Finanzas: pagos, gastos y rentabilidad */
+        Route::prefix('finanzas')->name('admin.finance.')->group(function () {
+            Route::middleware('permission:finanzas.ver')->group(function () {
+                Route::get('/', [FinanceController::class, 'index'])->name('index');
+                Route::get('exportar/{type}', [FinanceController::class, 'export'])
+                    ->whereIn('type', ['pagos', 'gastos'])->name('export');
+            });
+
+            Route::middleware('permission:finanzas.gestionar')->group(function () {
+                Route::post('pagos', [FinanceController::class, 'storePayment'])->name('payments.store');
+                Route::put('pagos/{payment}', [FinanceController::class, 'updatePayment'])->name('payments.update');
+                Route::delete('pagos/{payment}', [FinanceController::class, 'destroyPayment'])->name('payments.destroy');
+                Route::post('gastos', [FinanceController::class, 'storeExpense'])->name('expenses.store');
+                Route::put('gastos/{expense}', [FinanceController::class, 'updateExpense'])->name('expenses.update');
+                Route::delete('gastos/{expense}', [FinanceController::class, 'destroyExpense'])->name('expenses.destroy');
+            });
         });
 
         /* Conversaciones del asistente */

@@ -7,8 +7,11 @@ use App\Http\Requests\Admin\ProjectRequest;
 use App\Models\Activity;
 use App\Models\Client;
 use App\Models\Deliverable;
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
 use App\Models\File;
 use App\Models\Milestone;
+use App\Models\Payment;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
@@ -125,6 +128,21 @@ class ProjectController extends Controller
             ]),
             'activities' => $project->activities()->with('user:id,name')->limit(100)->get()
                 ->map(fn (Activity $a) => $a->toTimelineArray()),
+            // Las cifras de dinero solo para quien puede ver finanzas.
+            'finance' => request()->user()->can('finanzas.ver') ? [
+                ...$project->finance(),
+                'payments' => $project->payments()->get()->map(fn (Payment $p) => [
+                    ...$p->only(['id', 'project_id', 'amount', 'currency', 'method', 'reference', 'notes']),
+                    'paid_on' => $p->paid_on->toDateString(),
+                ]),
+                'expense_items' => $project->expenses()->with('category:id,name')->get()->map(fn (Expense $e) => [
+                    ...$e->only(['id', 'project_id', 'description', 'vendor', 'amount', 'currency', 'is_recurring']),
+                    'spent_on' => $e->spent_on->toDateString(),
+                    'category' => $e->category?->name,
+                ]),
+                'methods' => Options::from(Payment::METHODS),
+                'categories' => ExpenseCategory::query()->orderBy('name')->pluck('name'),
+            ] : null,
             'options' => [
                 ...$this->options(),
                 'task_statuses' => Options::from(Task::STATUSES),

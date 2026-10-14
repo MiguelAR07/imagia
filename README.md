@@ -118,15 +118,25 @@ El botón **«¿Te ayudo?»** del sitio abre un chat que hace una pregunta a la 
 - **Sin IA (por defecto):** flujo guiado por reglas en `app/Assistant/RulesEngine.php`. Se adapta al objetivo y acepta texto libre.
 - **Con IA (opcional):** agrega en `.env`:
 
-  ```env
-  ANTHROPIC_API_KEY=sk-ant-...
-  ASSISTANT_MODEL=claude-opus-5-5   # se puede cambiar por otro modelo de Claude
-  ASSISTANT_DAILY_LIMIT=300         # respuestas con IA por día; luego sigue el flujo guiado
-  ```
+    ```env
+    ANTHROPIC_API_KEY=sk-ant-...
+    ASSISTANT_MODEL=claude-opus-5-5   # se puede cambiar por otro modelo de Claude
+    ASSISTANT_DAILY_LIMIT=300         # respuestas con IA por día; luego sigue el flujo guiado
+    ```
 
-  Las instrucciones del asistente están en `resources/prompts/assistant.md` y solo recibe el catálogo **publicado** (con precio solo si está definido). La respuesta de la IA se valida contra un esquema; si falla, se niega o llega al tope diario, la conversación sigue con el flujo guiado. Se usa el respaldo de servidor (`fallbacks: default`) por si el modelo declina una solicitud.
+    Las instrucciones del asistente están en `resources/prompts/assistant.md` y solo recibe el catálogo **publicado** (con precio solo si está definido). La respuesta de la IA se valida contra un esquema; si falla, se niega o llega al tope diario, la conversación sigue con el flujo guiado. Se usa el respaldo de servidor (`fallbacks: default`) por si el modelo declina una solicitud.
+
 - **Seguridad:** la clave nunca llega al navegador; límites por IP (20 mensajes/min, 10 conversaciones/hora), 30 mensajes por conversación y 1.000 caracteres por mensaje; se quita el HTML; el asistente no puede guardar datos ni agendar: solo el formulario con autorización crea el prospecto.
 - **Panel:** **Conversaciones** (`/admin/conversaciones`) muestra transcripción, resumen, prospecto vinculado, seguimiento (nueva / en revisión / atendida) y notas. **Configuración → Asistente** activa o desactiva el chat, cambia el saludo, elige el plan que se muestra con cada recomendación y muestra el estado de la IA.
+
+## Finanzas y seguimiento (Fase 6)
+
+- **Finanzas** (`/admin/finanzas`, solo con permiso `finanzas.ver`): recibido, gastos, utilidad y por cobrar del periodo (este mes, mes anterior, últimos 3 meses, año), gráfica de 12 meses, rentabilidad por proyecto y descarga en CSV para Excel.
+- **Pagos:** siempre de un proyecto y en su moneda; no pueden superar lo que falta por cobrar ni tener fecha futura. Crear, editar o borrar un pago queda en el historial del proyecto.
+- **Gastos:** generales o de un proyecto (cuentan para su rentabilidad); las categorías se crean al escribirlas.
+- Cada moneda se calcula por separado (no se convierten tasas de cambio). Es un control interno, no contabilidad oficial.
+- **Inicio del panel:** indicadores reales según los permisos de cada usuario (prospectos, conversaciones, cotizaciones, proyectos, mis tareas y dinero del mes) y listas de lo que requiere atención.
+- **Notificaciones** (campana): prospecto nuevo desde el sitio (también por correo) y tarea asignada. Si el envío falla, el registro igual se guarda.
 
 ## Fases
 
@@ -135,5 +145,5 @@ El botón **«¿Te ayudo?»** del sitio abre un chat que hace una pregunta a la 
 3. ✅ Administración: clientes, prospectos, proyectos, tareas, catálogo, portafolio, planes, cotizaciones
 4. ✅ Sitio comercial: inicio, servicios, proyectos, planes, proceso, cotizar, contacto, legales, SEO
 5. ✅ Asistente inteligente: flujo guiado + IA opcional, conversaciones en el panel
-6. Seguimiento comercial y financiero
+6. ✅ Seguimiento comercial y financiero: pagos, gastos, rentabilidad, inicio con indicadores, notificaciones
 7. Pruebas y despliegue

@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Lead;
 use App\Models\PipelineStage;
+use App\Notifications\NewLeadReceived;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -26,7 +27,7 @@ class LeadIntake
             throw new RuntimeException('El embudo comercial no tiene etapas.');
         }
 
-        return DB::transaction(function () use ($data, $source, $details, $stage) {
+        $lead = DB::transaction(function () use ($data, $source, $details, $stage) {
             $lead = new Lead([
                 ...collect($data)->except('recommended_plan_id')->all(),
                 'source' => $source,
@@ -42,5 +43,10 @@ class LeadIntake
 
             return $lead;
         });
+
+        // El aviso al equipo va después de guardar: si falla, el prospecto ya quedó registrado.
+        Notify::team('prospectos.gestionar', new NewLeadReceived($lead));
+
+        return $lead;
     }
 }

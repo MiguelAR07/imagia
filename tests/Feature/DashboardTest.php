@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Project;
 use App\Models\User;
+use Database\Seeders\BaseDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -33,7 +35,26 @@ class DashboardTest extends TestCase
                 ->component('admin/dashboard')
                 ->where('brand.name', 'IMAGIA')
                 ->has('brand.acronym', 6)
-                ->where('stats.active_users', 1)
+                // Un colaborador no ve dinero, sí su trabajo y el embudo.
+                ->where('finance', null)
+                ->has('myTasks')
+                ->has('commercial')
+            );
+    }
+
+    public function test_admins_see_real_money_figures()
+    {
+        $this->seed(BaseDataSeeder::class);
+        $project = Project::factory()->create(['agreed_amount' => 1000000, 'currency' => 'COP']);
+        $project->payments()->forceCreate(['amount' => 400000, 'currency' => 'COP', 'paid_on' => today(), 'method' => 'transfer']);
+
+        $this->actingAs($this->admin())
+            ->get(route('dashboard'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('finance.received', 400000)
+                ->where('finance.receivable', 600000)
+                ->has('finance.monthly', 6)
+                ->where('operation.active_projects', 1)
             );
     }
 

@@ -133,6 +133,43 @@ class Project extends Model
     }
 
     /**
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class)->latest('paid_on')->latest('id');
+    }
+
+    /**
+     * @return HasMany<Expense, $this>
+     */
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class)->latest('spent_on')->latest('id');
+    }
+
+    /**
+     * Cuentas del proyecto en su moneda: contratado, recibido, por cobrar, gastos y utilidad.
+     * Los gastos en otra moneda no se suman (no se convierten tasas de cambio).
+     *
+     * @return array{agreed: float|null, received: float, pending: float|null, expenses: float, profit: float}
+     */
+    public function finance(): array
+    {
+        $received = (float) $this->payments()->sum('amount');
+        $expenses = (float) $this->expenses()->where('currency', $this->currency)->sum('amount');
+        $agreed = $this->agreed_amount !== null ? (float) $this->agreed_amount : null;
+
+        return [
+            'agreed' => $agreed,
+            'received' => $received,
+            'pending' => $agreed !== null ? max(0.0, $agreed - $received) : null,
+            'expenses' => $expenses,
+            'profit' => $received - $expenses,
+        ];
+    }
+
+    /**
      * Avance en porcentaje (0–100).
      * - tasks: peso de las tareas terminadas ÷ peso total de las tareas.
      * - manual: el valor que se fijó a mano.

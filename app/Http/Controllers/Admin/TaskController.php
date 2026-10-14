@@ -8,6 +8,8 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskComment;
 use App\Models\User;
+use App\Notifications\TaskAssigned;
+use App\Support\Notify;
 use App\Support\Options;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -86,10 +88,11 @@ class TaskController extends Controller
         $data = $request->validated();
         $project = Project::query()->findOrFail($data['project_id']);
 
-        $project->tasks()->create([
+        $task = $project->tasks()->create([
             ...collect($data)->except('project_id')->all(),
             'sort_order' => (int) $project->tasks()->max('sort_order') + 1,
         ]);
+        $this->notifyAssignee($task, null, $request->user());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Tarea creada.']);
 
@@ -117,11 +120,29 @@ class TaskController extends Controller
 
     public function update(TaskRequest $request, Task $task): RedirectResponse
     {
+        $previousAssignee = $task->assignee_id;
         $task->update($request->validated());
+        $this->notifyAssignee($task, $previousAssignee, $request->user());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Tarea actualizada.']);
 
         return back();
+    }
+
+    /**
+     * Avisa al nuevo responsable (no si se la asignó a sí mismo).
+     */
+    private function notifyAssignee(Task $task, ?int $previousAssignee, User $by): void
+    {
+        if ($task->assignee_id === null || $task->assignee_id === $previousAssignee || $task->assignee_id === $by->id) {
+            return;
+        }
+
+        $assignee = User::query()->find($task->assignee_id);
+
+        if ($assignee !== null) {
+            Notify::user($assignee, new TaskAssigned($task->loadMissing('project:id,name'), $by));
+        }
     }
 
     /** Cambio rápido de estado (tablero o casilla de «hecha»). */

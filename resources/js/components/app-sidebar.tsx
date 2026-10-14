@@ -12,6 +12,7 @@ import {
     Settings2,
     Target,
     Users,
+    Wallet,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
@@ -29,6 +30,7 @@ import {
 import { useCan } from '@/hooks/use-can';
 import { dashboard, home } from '@/routes';
 import { home as catalogHome } from '@/routes/admin/catalog';
+import { index as financeIndex } from '@/routes/admin/finance';
 import { index as conversationsIndex } from '@/routes/admin/conversations';
 import { index as clientsIndex } from '@/routes/admin/clients';
 import { index as leadsIndex } from '@/routes/admin/leads';
@@ -77,6 +79,16 @@ export function AppSidebar() {
                       title: 'Clientes',
                       href: clientsIndex(),
                       icon: Building2,
+                      matchChildren: true,
+                  },
+              ]
+            : []),
+        ...(can('finanzas.ver')
+            ? [
+                  {
+                      title: 'Finanzas',
+                      href: financeIndex(),
+                      icon: Wallet,
                       matchChildren: true,
                   },
               ]

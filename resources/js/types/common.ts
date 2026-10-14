@@ -20,3 +20,16 @@ export type ActivityItem = {
     user: { id: number; name: string } | null;
     is_manual: boolean;
 };
+
+/** Avisos de la campana del panel. */
+export type SharedNotifications = {
+    unread: number;
+    items: {
+        id: string;
+        title: string;
+        body: string;
+        icon: string | null;
+        read: boolean;
+        created_at: string | null;
+    }[];
+};
