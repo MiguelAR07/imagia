@@ -17,6 +17,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CtaBand } from '@/components/site/cta-band';
 import { ProjectCard } from '@/components/site/project-card';
 import { SectionHeading } from '@/components/site/section-heading';
+import { cn } from '@/lib/utils';
 import { projects } from '@/routes/site';
 import type { PublicProject, PublicProjectCard, SiteProps } from '@/types';
 
@@ -256,13 +257,20 @@ export default function ProjectPage({
                                         </ul>
                                     )}
                                 </div>
-                                {part.images.length > 0 && (
-                                    <Gallery
-                                        images={part.images}
-                                        title={`${part.label} de ${project.title}`}
-                                        onOpen={openImage}
-                                    />
-                                )}
+                                {part.images.length > 0 &&
+                                    (part.images.every((img) => img.caption) ? (
+                                        <Walkthrough
+                                            images={part.images}
+                                            title={`${part.label} de ${project.title}`}
+                                            onOpen={openImage}
+                                        />
+                                    ) : (
+                                        <Gallery
+                                            images={part.images}
+                                            title={`${part.label} de ${project.title}`}
+                                            onOpen={openImage}
+                                        />
+                                    ))}
                             </div>
                         </section>
                     );
@@ -325,6 +333,65 @@ export default function ProjectPage({
 
             <CtaBand title="¿Quieres algo así para tu negocio?" />
         </>
+    );
+}
+
+/**
+ * Recorrido tipo manual: cada imagen es un paso. La descripción «Título: explicación»
+ * se muestra con el título destacado.
+ */
+function Walkthrough({
+    images,
+    title,
+    onOpen,
+}: {
+    images: Image[];
+    title: string;
+    onOpen: (img: Image) => void;
+}) {
+    return (
+        <ol className="space-y-6">
+            {images.map((img, i) => {
+                const caption = img.caption ?? '';
+                const split = caption.indexOf(':');
+                const heading = split > 0 ? caption.slice(0, split) : null;
+                const text =
+                    split > 0 ? caption.slice(split + 1).trim() : caption;
+
+                return (
+                    <li
+                        key={img.url}
+                        className="grid items-center gap-5 rounded-2xl border bg-card p-4 md:grid-cols-[1.6fr_1fr] md:p-5"
+                    >
+                        <button
+                            type="button"
+                            onClick={() => onOpen(img)}
+                            className={cn(
+                                'block overflow-hidden rounded-xl border bg-muted/40',
+                                i % 2 === 1 && 'md:order-2',
+                            )}
+                            aria-label={`Ampliar paso ${i + 1}`}
+                        >
+                            <img
+                                src={img.url}
+                                alt={caption || `Paso ${i + 1} de ${title}`}
+                                loading="lazy"
+                                className="aspect-[16/10] w-full object-cover object-top transition-transform duration-500 motion-safe:hover:scale-[1.02]"
+                            />
+                        </button>
+                        <div className="space-y-2">
+                            <span className="inline-flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-[#3b5bff] to-[#22d3ee] font-mono text-sm font-bold text-white">
+                                {i + 1}
+                            </span>
+                            {heading && (
+                                <h3 className="text-xl font-bold">{heading}</h3>
+                            )}
+                            <p className="text-muted-foreground">{text}</p>
+                        </div>
+                    </li>
+                );
+            })}
+        </ol>
     );
 }
 
