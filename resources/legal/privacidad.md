@@ -21,3 +21,14 @@ Puedes conocer, actualizar, corregir y pedir la eliminación de tus datos, y rev
 ## Seguridad
 
 Guardamos la información en sistemas con acceso restringido y protegido por contraseña.
+
+## Cookies y almacenamiento del navegador
+
+Este sitio solo usa cookies necesarias para funcionar, que no requieren tu autorización:
+
+- **Sesión:** mantiene tu sesión abierta mientras navegas. Se borra a las 2 horas de inactividad.
+- **Seguridad (XSRF-TOKEN):** evita que otras páginas envíen formularios en tu nombre.
+
+Además, el asistente del sitio guarda en tu navegador un identificador de la conversación para que puedas retomarla. Puedes borrarlo cuando quieras desde la configuración de tu navegador o con el botón «Empezar de nuevo» del asistente.
+
+No usamos cookies de publicidad ni de analítica, ni compartimos tu navegación con terceros. Si en el futuro las usamos, te pediremos autorización antes.
