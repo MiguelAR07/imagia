@@ -68,8 +68,9 @@ export default function Home({
                             )}
                         </h1>
                         <p className="max-w-lg text-lg text-muted-foreground">
-                            Desarrollamos webs, aplicaciones y automatizaciones
-                            a la medida de lo que tu negocio necesita de verdad.
+                            Desarrollamos páginas web, sistemas de gestión y
+                            automatizaciones a la medida de lo que tu negocio
+                            necesita de verdad.
                         </p>
                         <div className="flex flex-wrap gap-3">
                             <a

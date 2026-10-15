@@ -1,9 +1,13 @@
-import { Globe, Smartphone, Workflow } from 'lucide-react';
+import { Globe, LayoutDashboard, Workflow } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
 
 const ORBIT = [
     { icon: Globe, label: 'Web', className: 'top-[6%] left-[8%]' },
-    { icon: Smartphone, label: 'Apps', className: 'top-[18%] right-[2%]' },
+    {
+        icon: LayoutDashboard,
+        label: 'Sistemas',
+        className: 'top-[18%] right-[2%]',
+    },
     {
         icon: Workflow,
         label: 'Automatización',
