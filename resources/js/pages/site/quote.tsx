@@ -23,6 +23,11 @@ type Props = SiteProps & {
     timeframes: string[];
     selectedPlan: string | null;
     selectedService: string | null;
+    prefill: {
+        need: string | null;
+        budget: string | null;
+        description: string | null;
+    };
 };
 
 const STEPS = ['Qué necesitas', 'Tu proyecto', 'Tus datos'];
@@ -42,16 +47,18 @@ export default function QuotePage({
     timeframes,
     selectedPlan,
     selectedService,
+    prefill,
     seoTitle,
 }: Props) {
     const [step, setStep] = useState(0);
     const form = useForm({
-        need: selectedPlan || selectedService ? 'website' : '',
+        need:
+            prefill.need ?? (selectedPlan || selectedService ? 'website' : ''),
         service: selectedService ?? '',
         plan: selectedPlan ?? '',
         business: '',
-        description: '',
-        budget: '',
+        description: prefill.description ?? '',
+        budget: prefill.budget ?? '',
         timeframe: '',
         name: '',
         company: '',

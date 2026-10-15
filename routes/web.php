@@ -28,6 +28,7 @@ Route::get('privacidad', [PageController::class, 'privacy'])->name('site.privacy
 Route::get('terminos', [PageController::class, 'terms'])->name('site.terms');
 Route::get('soporte', [PageController::class, 'support'])->name('site.support');
 
+Route::get('calcula-tu-proyecto', [PageController::class, 'budget'])->middleware('throttle:60,1')->name('site.budget');
 Route::get('cotizar', [LeadFormController::class, 'quote'])->name('site.quote');
 Route::post('cotizar', [LeadFormController::class, 'storeQuote'])->middleware('throttle:5,1')->name('site.quote.store');
 Route::get('contacto', [LeadFormController::class, 'contact'])->name('site.contact');

@@ -52,7 +52,34 @@ class LeadFormController extends SiteController
             'timeframes' => self::TIMEFRAMES,
             'selectedPlan' => $plan?->slug,
             'selectedService' => $request->string('servicio')->toString() ?: null,
+            // Datos que llegan de la calculadora de presupuesto (el visitante los puede cambiar).
+            'prefill' => $this->prefillFromBudget($request),
         ], 'Solicitar cotización', 'Cuéntanos qué necesitas y te enviamos una propuesta personalizada, sin compromiso.');
+    }
+
+    /**
+     * @return array{need: string|null, budget: string|null, description: string|null}
+     */
+    private function prefillFromBudget(Request $request): array
+    {
+        $budget = (int) preg_replace('/\D/', '', $request->string('presupuesto')->toString());
+
+        return [
+            'need' => match ($request->string('objetivo')->toString()) {
+                'landing', 'website' => 'website',
+                'management' => 'organize',
+                'automation' => 'automate',
+                default => null,
+            },
+            'budget' => match (true) {
+                $budget <= 0 => null,
+                $budget < 2000000 => self::BUDGETS[0],
+                $budget < 5000000 => self::BUDGETS[1],
+                $budget < 15000000 => self::BUDGETS[2],
+                default => self::BUDGETS[3],
+            },
+            'description' => $request->filled('detalle') ? mb_substr(strip_tags($request->string('detalle')->toString()), 0, 1000) : null,
+        ];
     }
 
     public function storeQuote(Request $request): RedirectResponse

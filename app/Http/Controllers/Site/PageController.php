@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Site;
 use App\Models\PortfolioItem;
 use App\Models\Project;
 use App\Models\Service;
+use App\Support\BudgetPlanner;
 use App\Support\PublicCatalog;
 use App\Support\Settings;
 use Illuminate\Http\Request;
@@ -73,6 +74,26 @@ class PageController extends SiteController
             'plans' => PublicCatalog::plans(),
             'faqs' => PublicCatalog::generalFaqs(),
         ], 'Planes', 'Planes para tener presencia digital, una web profesional, un sistema de gestión o una solución a la medida.');
+    }
+
+    /**
+     * Calculadora de presupuesto: «tengo tanto, ¿qué podemos hacer?».
+     */
+    public function budget(Request $request): Response
+    {
+        $budget = (int) preg_replace('/\D/', '', $request->string('presupuesto')->toString());
+        $goal = $request->string('objetivo')->toString();
+        $valid = array_key_exists($goal, BudgetPlanner::GOALS)
+            && $budget >= BudgetPlanner::MIN_BUDGET && $budget <= BudgetPlanner::MAX_BUDGET;
+        $result = $valid ? BudgetPlanner::plan($budget, $goal) : null;
+
+        return $this->page('site/budget', [
+            'goals' => collect(BudgetPlanner::GOALS)->map(fn ($g, $key) => ['value' => $key, 'label' => $g[0]])->values(),
+            'input' => ['budget' => $budget ?: null, 'goal' => $goal ?: null],
+            'limits' => ['min' => BudgetPlanner::MIN_BUDGET, 'max' => BudgetPlanner::MAX_BUDGET],
+            'result' => $result,
+            'summary' => $result ? BudgetPlanner::summary($result) : null,
+        ], 'Calcula tu proyecto', 'Dinos cuánto quieres invertir y te mostramos qué podemos construir para tu negocio.');
     }
 
     public function process(): Response

@@ -1,4 +1,6 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
+import { ArrowRight, Calculator } from 'lucide-react';
+import { budget } from '@/routes/site';
 import { CtaBand } from '@/components/site/cta-band';
 import { FaqList } from '@/components/site/faq-list';
 import { PlanCard } from '@/components/site/plan-card';
@@ -31,6 +33,21 @@ export default function Plans({
                     title="Elige cómo empezar"
                     description="Los valores son de referencia: cada proyecto se confirma con una cotización escrita. Si lo que necesitas no encaja en un plan, lo cotizamos a la medida."
                 />
+                <Link
+                    href={budget()}
+                    className="flex flex-wrap items-center gap-3 rounded-2xl border border-brand-cyan/40 bg-brand-cyan/5 p-4 text-sm transition-colors hover:border-brand-cyan"
+                >
+                    <Calculator className="size-5 text-brand-cyan" />
+                    <span className="flex-1">
+                        <strong>¿Tienes un presupuesto definido?</strong> Dinos
+                        cuánto quieres invertir y te mostramos qué podemos
+                        construir con eso.
+                    </span>
+                    <span className="inline-flex items-center gap-1 font-semibold text-brand-cyan">
+                        Calcular
+                        <ArrowRight className="size-4" />
+                    </span>
+                </Link>
                 {plans.length === 0 ? (
                     <p className="rounded-2xl border bg-card p-8 text-muted-foreground">
                         Estamos preparando nuestros planes. Solicita una

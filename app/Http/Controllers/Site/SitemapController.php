@@ -21,6 +21,7 @@ class SitemapController extends Controller
             ['loc' => route('site.plans'), 'priority' => '0.9'],
             ['loc' => route('site.process'), 'priority' => '0.6'],
             ['loc' => route('site.quote'), 'priority' => '0.8'],
+            ['loc' => route('site.budget'), 'priority' => '0.8'],
             ['loc' => route('site.contact'), 'priority' => '0.7'],
             ['loc' => route('site.support'), 'priority' => '0.3'],
         ])

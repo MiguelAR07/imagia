@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { whatsappLink } from '@/lib/whatsapp';
 import { dashboard, home, login } from '@/routes';
 import {
+    budget,
     contact,
     plans,
     privacy,
@@ -27,6 +28,7 @@ const NAV = [
     { title: 'Servicios', href: services() },
     { title: 'Proyectos', href: projects() },
     { title: 'Planes', href: plans() },
+    { title: 'Calcula tu proyecto', href: budget() },
     { title: 'Cómo trabajamos', href: process() },
     { title: 'Contacto', href: contact() },
 ];

@@ -199,6 +199,7 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
             Route::get('funcionalidades', [FeatureController::class, 'index'])->name('features.index');
             Route::post('funcionalidades', [FeatureController::class, 'store'])->name('features.store');
             Route::put('funcionalidades/{feature}', [FeatureController::class, 'update'])->name('features.update');
+            Route::put('funcionalidades/{feature}/modulo', [FeatureController::class, 'updateModule'])->name('features.module');
             Route::delete('funcionalidades/{feature}', [FeatureController::class, 'destroy'])->name('features.destroy');
 
             Route::get('preguntas', [FaqController::class, 'index'])->name('faqs.index');
