@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { ExpenseDialog } from '@/components/finance/expense-dialog';
 import { MoneyStat } from '@/components/finance/money-chart';
+import { OnlinePayments } from '@/components/finance/online-payments';
 import { PaymentDialog } from '@/components/finance/payment-dialog';
 import { Button } from '@/components/ui/button';
 import { formatDate, formatMoney } from '@/lib/format';
@@ -14,11 +15,13 @@ import type { ExpenseRow, PaymentRow, ProjectFinance } from '@/types';
 /** Pestaña de dinero en la ficha del proyecto: contratado, recibido, por cobrar y gastos. */
 export function ProjectFinancePanel({
     projectId,
+    projectName,
     currency,
     finance,
     canManage,
 }: {
     projectId: number;
+    projectName: string;
     currency: string;
     finance: ProjectFinance;
     canManage: boolean;
@@ -88,6 +91,14 @@ export function ProjectFinancePanel({
                     />
                 </div>
             )}
+
+            <OnlinePayments
+                projectId={projectId}
+                projectName={projectName}
+                online={finance.online}
+                pending={finance.pending}
+                canManage={canManage}
+            />
 
             <div className="grid gap-6 lg:grid-cols-2">
                 <section className="rounded-xl border bg-card p-5">

@@ -141,6 +141,14 @@ class Project extends Model
     }
 
     /**
+     * @return HasMany<PaymentLink, $this>
+     */
+    public function paymentLinks(): HasMany
+    {
+        return $this->hasMany(PaymentLink::class);
+    }
+
+    /**
      * @return HasMany<Expense, $this>
      */
     public function expenses(): HasMany

@@ -138,6 +138,16 @@ El botón **«¿Te ayudo?»** del sitio abre un chat que hace una pregunta a la 
 - **Inicio del panel:** indicadores reales según los permisos de cada usuario (prospectos, conversaciones, cotizaciones, proyectos, mis tareas y dinero del mes) y listas de lo que requiere atención.
 - **Notificaciones** (campana): prospecto nuevo desde el sitio (también por correo) y tarea asignada. Si el envío falla, el registro igual se guarda.
 
+## Pagos en línea con Wompi
+
+En la ficha de un proyecto → **Pagos y gastos → Cobro en línea** se crea un **link de pago** (por ejemplo, el anticipo). El cliente lo abre en `/pagar/{token}` y paga en el checkout seguro de Wompi con tarjeta (también a cuotas), PSE o Nequi.
+
+- El pago se firma en el servidor (SHA-256 de referencia + centavos + moneda + secreto de integridad); el secreto nunca llega al navegador.
+- Solo se registra cuando Wompi lo confirma: por **evento firmado** en `POST /webhooks/wompi` (se valida con el secreto de eventos) o consultando la transacción en la API al volver del checkout. El regreso del cliente nunca cuenta como prueba de pago.
+- Al confirmarse: se crea el pago en Finanzas, queda en el historial del proyecto y llega una notificación. Es idempotente (no se duplica).
+- Llaves en `.env`: `WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET`, `WOMPI_EVENTS_SECRET`. Con llaves `pub_test_…` funciona en **modo de prueba** (sandbox).
+- En el panel de Wompi, configura la URL de eventos: `https://TU-DOMINIO/webhooks/wompi`.
+
 ## Fases
 
 1. ✅ Marca y experiencia visual

@@ -71,4 +71,23 @@ export type ProjectFinance = {
     expense_items: ExpenseRow[];
     methods: Option[];
     categories: string[];
+    online: {
+        enabled: boolean;
+        sandbox: boolean;
+        links: PaymentLinkRow[];
+    };
+};
+
+/** Link de pago en línea (Wompi). */
+export type PaymentLinkRow = {
+    id: number;
+    amount: string;
+    currency: string;
+    description: string;
+    status: 'pending' | 'paid' | 'cancelled';
+    last_transaction_status: string | null;
+    payment_method_type: string | null;
+    url: string;
+    paid_at: string | null;
+    created_at: string | null;
 };

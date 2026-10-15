@@ -20,6 +20,9 @@
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="ANTHROPIC_API_KEY" value=""/>
+        <env name="WOMPI_PUBLIC_KEY" value=""/>
+        <env name="WOMPI_INTEGRITY_SECRET" value=""/>
+        <env name="WOMPI_EVENTS_SECRET" value=""/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>

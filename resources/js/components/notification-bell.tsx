@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Bell, ListChecks, Target } from 'lucide-react';
+import { Bell, CreditCard, ListChecks, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -13,7 +13,7 @@ import { formatRelative } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { open, read } from '@/routes/admin/notifications';
 
-const ICONS = { lead: Target, task: ListChecks };
+const ICONS = { lead: Target, task: ListChecks, payment: CreditCard };
 
 /** Campana del panel: prospectos nuevos, tareas asignadas… */
 export function NotificationBell() {

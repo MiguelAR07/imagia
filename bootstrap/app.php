@@ -19,6 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
+        // Wompi envía sus eventos sin token CSRF: se validan con la firma del evento.
+        $middleware->validateCsrfTokens(except: ['webhooks/wompi']);
+
         $middleware->alias([
             'permission' => PermissionMiddleware::class,
         ]);

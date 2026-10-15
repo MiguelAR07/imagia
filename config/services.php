@@ -47,4 +47,14 @@ return [
         'timeout' => (float) env('ASSISTANT_TIMEOUT', 30),
     ],
 
+    /*
+    | Pagos en línea con Wompi. Las llaves solo viven en .env. El ambiente (pruebas o
+    | producción) se deduce de la llave pública: pub_test_… o pub_prod_….
+    */
+    'wompi' => [
+        'public_key' => env('WOMPI_PUBLIC_KEY'),
+        'integrity_secret' => env('WOMPI_INTEGRITY_SECRET'),
+        'events_secret' => env('WOMPI_EVENTS_SECRET'),
+    ],
+
 ];

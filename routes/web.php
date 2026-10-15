@@ -4,8 +4,15 @@ use App\Http\Controllers\PortfolioMediaController;
 use App\Http\Controllers\Site\AssistantController;
 use App\Http\Controllers\Site\LeadFormController;
 use App\Http\Controllers\Site\PageController;
+use App\Http\Controllers\Site\PayController;
 use App\Http\Controllers\Site\SitemapController;
+use App\Http\Controllers\WompiWebhookController;
 use Illuminate\Support\Facades\Route;
+
+/* Pagos en línea: página del link de pago, regreso desde Wompi y eventos de Wompi. */
+Route::get('pagar/{paymentLink}', [PayController::class, 'show'])->name('site.pay');
+Route::get('pagar/{paymentLink}/resultado', [PayController::class, 'result'])->middleware('throttle:20,1')->name('site.pay.result');
+Route::post('webhooks/wompi', WompiWebhookController::class)->middleware('throttle:120,1')->name('webhooks.wompi');
 
 /*
 | Sitio comercial público. Solo muestra contenido publicado desde el panel.
@@ -44,6 +51,8 @@ Route::get('robots.txt', fn () => response(implode("\n", [
     'Disallow: /login',
     'Disallow: /gracias',
     'Disallow: /asistente',
+    'Disallow: /pagar',
+    'Disallow: /webhooks',
     '',
     'Sitemap: '.route('sitemap'),
 ]), 200, ['Content-Type' => 'text/plain; charset=UTF-8']))->name('robots');

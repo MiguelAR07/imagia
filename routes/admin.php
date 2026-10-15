@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\FinanceController;
 use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\LegalSettingsController;
 use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\PaymentLinkController;
 use App\Http\Controllers\Admin\PipelineStageController;
 use App\Http\Controllers\Admin\PortfolioController;
 use App\Http\Controllers\Admin\ProjectController;
@@ -119,6 +120,10 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
                 Route::post('gastos', [FinanceController::class, 'storeExpense'])->name('expenses.store');
                 Route::put('gastos/{expense}', [FinanceController::class, 'updateExpense'])->name('expenses.update');
                 Route::delete('gastos/{expense}', [FinanceController::class, 'destroyExpense'])->name('expenses.destroy');
+
+                Route::post('proyectos/{project}/links-de-pago', [PaymentLinkController::class, 'store'])
+                    ->middleware('throttle:30,1')->name('links.store');
+                Route::patch('links-de-pago/{paymentLink:id}/anular', [PaymentLinkController::class, 'cancel'])->name('links.cancel');
             });
         });
 

@@ -12,9 +12,11 @@ use App\Models\ExpenseCategory;
 use App\Models\File;
 use App\Models\Milestone;
 use App\Models\Payment;
+use App\Models\PaymentLink;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
+use App\Payments\Wompi;
 use App\Support\Options;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -142,6 +144,16 @@ class ProjectController extends Controller
                 ]),
                 'methods' => Options::from(Payment::METHODS),
                 'categories' => ExpenseCategory::query()->orderBy('name')->pluck('name'),
+                'online' => [
+                    'enabled' => Wompi::configured(),
+                    'sandbox' => Wompi::sandbox(),
+                    'links' => $project->paymentLinks()->latest()->get()->map(fn (PaymentLink $l) => [
+                        ...$l->only(['id', 'amount', 'currency', 'description', 'status', 'last_transaction_status', 'payment_method_type']),
+                        'url' => route('site.pay', $l),
+                        'paid_at' => $l->paid_at?->toIso8601String(),
+                        'created_at' => $l->created_at?->toIso8601String(),
+                    ]),
+                ],
             ] : null,
             'options' => [
                 ...$this->options(),

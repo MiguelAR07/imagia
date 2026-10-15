@@ -375,6 +375,7 @@ export default function ProjectShow({
                     {tab === 'money' && finance && (
                         <ProjectFinancePanel
                             projectId={project.id}
+                            projectName={project.name}
                             currency={project.currency}
                             finance={finance}
                             canManage={
