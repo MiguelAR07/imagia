@@ -46,6 +46,7 @@ export type PublicPlan = {
     limits: string | null;
     exclusions: string | null;
     badge: string | null;
+    service: { name: string; slug: string } | null;
     price_type: string;
     price: string | null;
     currency: string;

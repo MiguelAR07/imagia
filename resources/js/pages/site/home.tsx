@@ -258,9 +258,20 @@ export default function Home({
                             </Link>
                         </div>
                         <div className="grid gap-6 pt-3 md:grid-cols-2 xl:grid-cols-4">
-                            {plans.map((p) => (
-                                <PlanCard key={p.slug} plan={p} />
-                            ))}
+                            {/* Un plan de entrada por línea; el resto en «Comparar planes». */}
+                            {plans
+                                .filter(
+                                    (p, i, all) =>
+                                        all.findIndex(
+                                            (o) =>
+                                                (o.service?.slug ?? o.slug) ===
+                                                (p.service?.slug ?? p.slug),
+                                        ) === i,
+                                )
+                                .slice(0, 4)
+                                .map((p) => (
+                                    <PlanCard key={p.slug} plan={p} />
+                                ))}
                         </div>
                     </div>
                 </section>

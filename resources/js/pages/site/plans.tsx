@@ -1,10 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowRight, Calculator } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { cn } from '@/lib/utils';
 import { budget } from '@/routes/site';
 import { CtaBand } from '@/components/site/cta-band';
 import { Explainers } from '@/components/site/explainers';
 import { FaqList } from '@/components/site/faq-list';
-import { PlanCard } from '@/components/site/plan-card';
+import { PLAN_LINES, PlanCard } from '@/components/site/plan-card';
 import { SectionHeading } from '@/components/site/section-heading';
 import type { PublicPlan, SiteProps } from '@/types';
 
@@ -12,10 +14,44 @@ export default function Plans({
     plans,
     faqs,
     seoTitle,
+    site,
 }: SiteProps & {
     plans: PublicPlan[];
     faqs: { question: string; answer: string }[];
 }) {
+    const [tab, setTab] = useState('all');
+
+    // Planes agrupados por línea, en el orden de los servicios publicados.
+    const groups = useMemo(() => {
+        const map = new Map<
+            string,
+            { slug: string; name: string; plans: PublicPlan[] }
+        >();
+
+        for (const s of site.services) {
+            map.set(s.slug, { slug: s.slug, name: s.name, plans: [] });
+        }
+
+        for (const p of plans) {
+            const key = p.service?.slug ?? 'otros';
+
+            if (!map.has(key)) {
+                map.set(key, {
+                    slug: key,
+                    name: p.service?.name ?? 'Otros planes',
+                    plans: [],
+                });
+            }
+
+            map.get(key)!.plans.push(p);
+        }
+
+        return [...map.values()].filter((g) => g.plans.length > 0);
+    }, [plans, site.services]);
+
+    const visibleGroups =
+        tab === 'all' ? groups : groups.filter((g) => g.slug === tab);
+
     const withDetails = plans.filter(
         (p) =>
             p.limits ||
@@ -55,10 +91,82 @@ export default function Plans({
                         cotización y te enviamos una propuesta personalizada.
                     </p>
                 ) : (
-                    <div className="grid gap-6 pt-3 md:grid-cols-2 xl:grid-cols-4">
-                        {plans.map((p) => (
-                            <PlanCard key={p.slug} plan={p} />
-                        ))}
+                    <div className="space-y-10">
+                        {groups.length > 1 && (
+                            <div
+                                role="tablist"
+                                aria-label="Líneas de servicio"
+                                className="flex gap-2 overflow-x-auto pb-1"
+                            >
+                                {[
+                                    { slug: 'all', name: 'Todos' },
+                                    ...groups,
+                                ].map((g) => {
+                                    const line = PLAN_LINES[g.slug];
+                                    const Icon = line?.icon;
+
+                                    return (
+                                        <button
+                                            key={g.slug}
+                                            type="button"
+                                            role="tab"
+                                            aria-selected={tab === g.slug}
+                                            onClick={() => setTab(g.slug)}
+                                            className={cn(
+                                                'inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors',
+                                                tab === g.slug
+                                                    ? 'border-transparent bg-foreground text-background'
+                                                    : 'text-muted-foreground hover:border-brand-cyan hover:text-foreground',
+                                            )}
+                                        >
+                                            {Icon && (
+                                                <Icon className="size-4" />
+                                            )}
+                                            {g.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {visibleGroups.map((g) => {
+                            const line = PLAN_LINES[g.slug];
+                            const Icon = line?.icon;
+
+                            return (
+                                <div key={g.slug} className="space-y-5">
+                                    {(groups.length > 1 || tab !== 'all') && (
+                                        <div className="flex items-center gap-3">
+                                            {Icon && (
+                                                <span
+                                                    className={cn(
+                                                        'flex size-9 items-center justify-center rounded-xl bg-gradient-to-br text-white',
+                                                        line.gradient,
+                                                    )}
+                                                >
+                                                    <Icon className="size-4" />
+                                                </span>
+                                            )}
+                                            <h2 className="text-xl font-bold">
+                                                {g.name}
+                                            </h2>
+                                            <span className="h-px flex-1 bg-border" />
+                                            <span className="text-xs text-muted-foreground">
+                                                {g.plans.length}{' '}
+                                                {g.plans.length === 1
+                                                    ? 'plan'
+                                                    : 'planes'}
+                                            </span>
+                                        </div>
+                                    )}
+                                    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                                        {g.plans.map((p) => (
+                                            <PlanCard key={p.slug} plan={p} />
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </section>

@@ -60,10 +60,12 @@ class PublicCatalog
     {
         return Plan::query()->where('is_published', true)
             ->when($serviceId, fn ($q) => $q->where('service_id', $serviceId))
-            ->with(['features', 'faqs' => fn ($q) => $q->where('is_published', true)])
+            ->with(['features', 'service:id,name,slug,is_published', 'faqs' => fn ($q) => $q->where('is_published', true)])
             ->orderBy('sort_order')->orderBy('id')->get()
             ->map(fn (Plan $p) => [
                 ...$p->only(['id', 'name', 'slug', 'summary', 'description', 'estimated_time', 'limits', 'exclusions', 'badge']),
+                // Línea del catálogo a la que pertenece (para agrupar las tarjetas).
+                'service' => $p->service?->is_published ? $p->service->only(['name', 'slug']) : null,
                 'price_type' => $p->hasValidPrice() ? $p->price_type : 'quote',
                 'price' => $p->hasValidPrice() ? $p->price : null,
                 'currency' => $p->currency,
