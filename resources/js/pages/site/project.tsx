@@ -372,7 +372,7 @@ function Walkthrough({
                                     src={img.url}
                                     alt={caption || `Paso ${i + 1} de ${title}`}
                                     loading="lazy"
-                                    className="aspect-[16/10] w-full object-cover object-top transition-transform duration-500 motion-safe:hover:scale-[1.03]"
+                                    className="aspect-[16/10] w-full object-contain transition-transform duration-500 motion-safe:hover:scale-[1.03]"
                                 />
                             </button>
                             <div className="space-y-1.5 p-4">
@@ -384,7 +384,7 @@ function Walkthrough({
                                         ? caption.slice(0, split)
                                         : `Paso ${i + 1}`}
                                 </p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-muted-foreground first-letter:uppercase">
                                     {split > 0
                                         ? caption.slice(split + 1).trim()
                                         : caption}
@@ -424,7 +424,7 @@ function Walkthrough({
                                 src={img.url}
                                 alt={caption || `Paso ${i + 1} de ${title}`}
                                 loading="lazy"
-                                className="aspect-[16/10] w-full object-cover object-top transition-transform duration-500 motion-safe:hover:scale-[1.02]"
+                                className="aspect-[16/10] w-full object-contain transition-transform duration-500 motion-safe:hover:scale-[1.02]"
                             />
                         </button>
                         <div className="space-y-2">
@@ -434,7 +434,9 @@ function Walkthrough({
                             {heading && (
                                 <h3 className="text-xl font-bold">{heading}</h3>
                             )}
-                            <p className="text-muted-foreground">{text}</p>
+                            <p className="text-muted-foreground first-letter:uppercase">
+                                {text}
+                            </p>
                         </div>
                     </li>
                 );
