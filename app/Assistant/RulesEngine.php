@@ -226,7 +226,7 @@ class RulesEngine implements AssistantEngine
         // Sin signos de pregunta solo cuentan inicios claramente interrogativos
         // («que vendo ropa» es una respuesta, no una pregunta).
         return Str::contains($input, ['?', '¿'])
-            || preg_match('/^(cuanto|cuanta|cuantos|cuantas|cuando|cual|cuales|donde|hacen|ofrecen|incluye|incluyen|aceptan)\b/', $text) === 1;
+            || preg_match('/^(que es|que significa|para que sirve|cuanto|cuanta|cuantos|cuantas|cuando|cual|cuales|donde|hacen|ofrecen|incluye|incluyen|aceptan)\b/', $text) === 1;
     }
 
     /**
@@ -244,9 +244,25 @@ class RulesEngine implements AssistantEngine
             return $faq;
         }
 
+        // 2. «¿Qué es…?»: explicaciones sencillas de cada tipo de solución.
+        if (Str::contains($text, ['que es', 'que significa', 'diferencia', 'para que sirve'])) {
+            $definition = match (true) {
+                Str::contains($text, ['landing']) => 'Una **landing page** es como un volante o un afiche en internet: una sola página enfocada en un producto, servicio o promoción, para que la persona te escriba o te compre.',
+                Str::contains($text, ['panel', 'administrador', 'administrativo']) => 'Un **panel de control** es la oficina privada de tu negocio: una parte a la que solo entras tú y tu equipo con usuario y contraseña, para cambiar textos y fotos o ver reservas, clientes y pagos sin saber programar.',
+                Str::contains($text, ['software', 'sistema', 'gestion']) => 'Un **software de gestión** es un sistema a la medida para organizar tu negocio (citas, clientes, inventario, pagos y reportes) y reemplazar el cuaderno, el Excel y los mensajes sueltos.',
+                Str::contains($text, ['automat']) => 'Una **automatización** hace que tareas repetitivas se hagan solas: recordatorios, reportes o pasar datos de una herramienta a otra.',
+                Str::contains($text, ['pagina', 'web', 'sitio']) => 'Una **página web** es tu local en internet, abierto las 24 horas: varias secciones (inicio, servicios, quiénes somos, contacto) que presentan tu negocio y dan confianza.',
+                default => null,
+            };
+
+            if ($definition !== null) {
+                return $definition;
+            }
+        }
+
         $plans = PublicCatalog::plans();
 
-        // 2. Precios: solo los configurados.
+        // 3. Precios: solo los configurados.
         if (Str::contains($text, ['precio', 'cuesta', 'costo', 'cobran', 'valor', 'vale', 'tarifa', 'cuanto sale'])) {
             if ($plans->isEmpty()) {
                 return 'El valor depende de lo que necesites. Después de conocer tu proyecto te enviamos una propuesta por escrito, sin compromiso.';
@@ -257,7 +273,7 @@ class RulesEngine implements AssistantEngine
             return "Estos son nuestros planes:\n{$lines}\n\nEl valor final depende del alcance y se confirma en una propuesta por escrito.";
         }
 
-        // 3. Tiempos: solo los estimados configurados en cada plan.
+        // 4. Tiempos: solo los estimados configurados en cada plan.
         if (Str::contains($text, ['tiempo', 'tarda', 'demora', 'dura', 'cuando estaria', 'cuando esta', 'plazo', 'entrega'])) {
             $timed = $plans->filter(fn ($p) => filled($p['estimated_time']));
 
@@ -270,7 +286,7 @@ class RulesEngine implements AssistantEngine
             return "Tiempos estimados:\n{$lines}\n\nLa fecha exacta se define en la propuesta, según el alcance.";
         }
 
-        // 4. Qué ofrecemos: los servicios publicados.
+        // 5. Qué ofrecemos: los servicios publicados.
         if (Str::contains($text, ['servicio', 'ofrecen', 'que hacen', 'a que se dedican', 'que venden'])) {
             $services = PublicCatalog::services();
 

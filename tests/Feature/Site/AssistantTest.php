@@ -131,6 +131,18 @@ class AssistantTest extends TestCase
         $this->assertSame('¿Qué te gustaría mostrar en internet?', end($state['messages'])['content']);
     }
 
+    public function test_the_assistant_explains_each_kind_of_solution_in_plain_words()
+    {
+        $uuid = $this->conversation(['Necesito una página web', 'Panadería']);
+
+        $state = $this->say($uuid, 'qué es una landing');
+        $this->assertStringContainsString('volante o un afiche en internet', end($state['messages'])['content']);
+
+        $state = $this->say($uuid, '¿Qué es un panel de control?');
+        $this->assertStringContainsString('oficina privada de tu negocio', end($state['messages'])['content']);
+        $this->assertStringContainsString('¿Actualmente tienes una página web?', end($state['messages'])['content']);
+    }
+
     public function test_published_faqs_answer_visitor_questions()
     {
         Faq::query()->create([

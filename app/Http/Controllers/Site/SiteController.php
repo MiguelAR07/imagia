@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Site;
 
 use App\Assistant\Assistant;
 use App\Http\Controllers\Controller;
+use App\Models\PortfolioItem;
 use App\Models\Service;
 use App\Support\Settings;
 use Inertia\Inertia;
@@ -35,6 +36,8 @@ abstract class SiteController extends Controller
                 'logo_parts' => $brand['logo_parts'],
                 'origin' => $brand['origin'],
                 'assistant' => Assistant::enabled(),
+                // Proyectos visibles del portafolio, para enlazar ejemplos reales en las explicaciones.
+                'portfolio' => PortfolioItem::query()->publiclyVisible()->whereNotNull('cover_path')->pluck('slug'),
             ],
             'seoTitle' => $fullTitle,
         ])->withViewData([

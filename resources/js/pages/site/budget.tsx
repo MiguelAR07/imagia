@@ -13,6 +13,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
+import { Explainers } from '@/components/site/explainers';
 import { formatMoney } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { budget as budgetRoute, quote } from '@/routes/site';
@@ -58,6 +59,14 @@ const ICONS: Record<string, LucideIcon> = {
     website: Globe,
     management: LayoutDashboard,
     automation: Workflow,
+};
+
+/** Una línea para entender cada opción sin palabras técnicas. */
+const HINTS: Record<string, string> = {
+    landing: 'Una sola página para presentar algo y recibir pedidos.',
+    website: 'Varias secciones para presentar tu negocio completo.',
+    management: 'Un sistema para organizar reservas, clientes, pagos…',
+    automation: 'Tareas repetitivas que se hacen solas.',
 };
 
 const QUICK = [1000000, 3000000, 5000000, 10000000];
@@ -163,18 +172,31 @@ export default function BudgetPage({
                                         aria-pressed={active}
                                         onClick={() => setGoal(g.value)}
                                         className={cn(
-                                            'flex items-center gap-3 rounded-xl border p-4 text-left text-sm font-medium transition-colors',
+                                            'flex flex-col gap-1.5 rounded-xl border p-4 text-left text-sm transition-colors',
                                             active
                                                 ? 'border-brand-blue bg-brand-blue/10'
                                                 : 'hover:border-brand-cyan/60',
                                         )}
                                     >
-                                        <Icon className="size-5 shrink-0 text-brand-cyan" />
-                                        {g.label}
+                                        <span className="flex items-center gap-3 font-medium">
+                                            <Icon className="size-5 shrink-0 text-brand-cyan" />
+                                            {g.label}
+                                        </span>
+                                        {HINTS[g.value] && (
+                                            <span className="text-xs text-muted-foreground">
+                                                {HINTS[g.value]}
+                                            </span>
+                                        )}
                                     </button>
                                 );
                             })}
                         </div>
+                        <a
+                            href="#guia"
+                            className="mt-3 inline-block text-sm text-brand-cyan hover:underline"
+                        >
+                            ¿No sabes cuál elegir? Mira qué es cada cosa ↓
+                        </a>
                     </fieldset>
 
                     <fieldset>
@@ -455,6 +477,13 @@ export default function BudgetPage({
                     )}
                 </section>
             )}
+
+            <div
+                id="guia"
+                className="mx-auto max-w-6xl scroll-mt-20 border-t px-5 py-16 md:px-8"
+            >
+                <Explainers />
+            </div>
         </>
     );
 }

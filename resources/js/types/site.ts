@@ -20,6 +20,7 @@ export type SiteProps = {
         logo_parts: LogoPart[];
         origin: OriginPart[];
         assistant: boolean;
+        portfolio: string[];
     };
     seoTitle: string;
 };

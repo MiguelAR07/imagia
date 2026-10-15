@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { ArrowRight, Calculator } from 'lucide-react';
 import { budget } from '@/routes/site';
 import { CtaBand } from '@/components/site/cta-band';
+import { Explainers } from '@/components/site/explainers';
 import { FaqList } from '@/components/site/faq-list';
 import { PlanCard } from '@/components/site/plan-card';
 import { SectionHeading } from '@/components/site/section-heading';
@@ -61,6 +62,10 @@ export default function Plans({
                     </div>
                 )}
             </section>
+
+            <div className="mx-auto max-w-6xl px-5 py-16 md:px-8">
+                <Explainers />
+            </div>
 
             {withDetails.length > 0 && (
                 <section className="border-t">

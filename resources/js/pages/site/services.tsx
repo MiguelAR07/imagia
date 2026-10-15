@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { ArrowRight } from 'lucide-react';
 import { CtaBand } from '@/components/site/cta-band';
+import { Explainers } from '@/components/site/explainers';
 import { SectionHeading } from '@/components/site/section-heading';
 import { serviceIcon } from '@/lib/service-icons';
 import { service } from '@/routes/site';
@@ -59,6 +60,11 @@ export default function Services({
                     </ul>
                 )}
             </section>
+            <div className="border-t">
+                <div className="mx-auto max-w-6xl px-5 py-16 md:px-8">
+                    <Explainers />
+                </div>
+            </div>
             <CtaBand />
         </>
     );
