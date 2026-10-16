@@ -7,9 +7,9 @@ use App\Models\PaymentLink;
 use App\Models\Project;
 use App\Notifications\PaymentLinkForClient;
 use App\Payments\Wompi;
+use App\Support\ClientMail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
@@ -49,11 +49,13 @@ class PaymentLinkController extends Controller
 
         $project->logActivity('system', 'Link de pago creado por $'.number_format((float) $link->amount, 0, ',', '.')." COP · {$link->description}.");
 
-        $sentTo = ($data['send_email'] ?? false) ? $this->sendToClient($link) : null;
+        $sent = ($data['send_email'] ?? false) ? $this->sendToClient($link) : null;
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => $sentTo
-            ? "Link de pago creado y enviado a {$sentTo}."
-            : 'Link de pago creado. Cópialo y envíaselo al cliente.']);
+        Inertia::flash('toast', match (true) {
+            $sent === null => ['type' => 'success', 'message' => 'Link de pago creado. Cópialo y envíaselo al cliente.'],
+            $sent === false => ['type' => 'error', 'message' => 'Link creado, pero no se pudo enviar el correo. Cópialo y envíalo por WhatsApp.'],
+            default => ['type' => 'success', 'message' => "Link de pago creado y enviado a {$sent}."],
+        });
 
         return back();
     }
@@ -63,18 +65,23 @@ class PaymentLinkController extends Controller
     {
         abort_if($paymentLink->status !== 'pending' || $paymentLink->project_id === null, 422, 'Solo se envían links pendientes.');
 
-        $sentTo = $this->sendToClient($paymentLink);
+        $sent = $this->sendToClient($paymentLink);
 
-        if ($sentTo === null) {
+        if ($sent === null) {
             throw ValidationException::withMessages(['email' => 'El cliente no tiene correo registrado.']);
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => "Link enviado a {$sentTo}."]);
+        Inertia::flash('toast', $sent === false
+            ? ['type' => 'error', 'message' => 'No se pudo enviar el correo. Revisa la configuración de correo.']
+            : ['type' => 'success', 'message' => "Link enviado a {$sent}."]);
 
         return back();
     }
 
-    private function sendToClient(PaymentLink $link): ?string
+    /**
+     * @return string|false|null El correo al que se envió, false si falló el envío o null si el cliente no tiene correo
+     */
+    private function sendToClient(PaymentLink $link): string|false|null
     {
         $link->load('project.client:id,name,email');
         $email = $link->project?->client?->email;
@@ -83,7 +90,10 @@ class PaymentLinkController extends Controller
             return null;
         }
 
-        Notification::route('mail', $email)->notify(new PaymentLinkForClient($link));
+        if (! ClientMail::send($email, new PaymentLinkForClient($link))) {
+            return false;
+        }
+
         $link->project->logActivity('system', "Link de pago «{$link->description}» enviado por correo a {$email}.");
 
         return $email;

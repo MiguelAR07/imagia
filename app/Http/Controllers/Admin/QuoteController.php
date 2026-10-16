@@ -12,6 +12,7 @@ use App\Models\Quote;
 use App\Models\QuoteItem;
 use App\Models\TaxRate;
 use App\Notifications\QuoteForClient;
+use App\Support\ClientMail;
 use App\Support\Options;
 use App\Support\QuoteAcceptance;
 use App\Support\QuoteCalculator;
@@ -19,7 +20,6 @@ use App\Support\Settings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -263,8 +263,13 @@ class QuoteController extends Controller
             $quote->forceFill(['status' => 'sent', 'sent_at' => now()])->save();
         }
 
+        if ($email !== null && ! ClientMail::send($email, new QuoteForClient($quote))) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'Enlace listo, pero no se pudo enviar el correo. Revisa la configuración de correo o envíalo por WhatsApp.']);
+
+            return back();
+        }
+
         if ($email !== null) {
-            Notification::route('mail', $email)->notify(new QuoteForClient($quote));
             $this->logOnRecipient($quote, "Cotización {$quote->number} enviada por correo a {$email}.");
         }
 
