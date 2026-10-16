@@ -74,6 +74,7 @@ export type ProjectFinance = {
     online: {
         enabled: boolean;
         sandbox: boolean;
+        client_email: string | null;
         links: PaymentLinkRow[];
     };
 };

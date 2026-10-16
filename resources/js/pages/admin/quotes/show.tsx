@@ -5,6 +5,7 @@ import {
     Copy,
     FolderPlus,
     Link2,
+    Mail,
     MessageCircle,
     Pencil,
     Printer,
@@ -54,6 +55,13 @@ export default function QuoteShow({
             { status },
             { preserveScroll: true, onFinish: done },
         );
+    const sendLink = (byEmail: boolean) =>
+        router.post(
+            share(quote.id).url,
+            { email: byEmail },
+            { preserveScroll: true },
+        );
+
     setLayoutProps({
         breadcrumbs: [
             { title: 'Cotizaciones', href: index() },
@@ -148,13 +156,21 @@ export default function QuoteShow({
                     {quote.status === 'draft' && (
                         <>
                             <p className="flex-1 text-sm text-muted-foreground">
-                                Cuando se la envíes al cliente, márcala como
-                                enviada para hacer seguimiento.
+                                {quote.recipient_email
+                                    ? `Envíasela a ${quote.recipient_email}: le llega un correo con el botón para revisarla, aceptarla y pagar el anticipo.`
+                                    : 'El cliente no tiene correo registrado. Genera el enlace y envíaselo por WhatsApp, o márcala como enviada.'}
                             </p>
-                            <Button onClick={() => change('sent')}>
-                                <Send className="size-4" />
-                                Marcar como enviada
-                            </Button>
+                            {quote.recipient_email ? (
+                                <Button onClick={() => sendLink(true)}>
+                                    <Mail className="size-4" />
+                                    Enviar al cliente
+                                </Button>
+                            ) : (
+                                <Button onClick={() => change('sent')}>
+                                    <Send className="size-4" />
+                                    Marcar como enviada
+                                </Button>
+                            )}
                         </>
                     )}
                     {quote.status === 'sent' && (
@@ -324,7 +340,11 @@ export default function QuoteShow({
                     </div>
 
                     <aside className="space-y-4">
-                        <ClientLink quote={quote} money={money} />
+                        <ClientLink
+                            quote={quote}
+                            money={money}
+                            onSend={sendLink}
+                        />
                         <div className="rounded-2xl border bg-card p-5">
                             <dl className="space-y-2 text-sm">
                                 <Row
@@ -405,9 +425,11 @@ export default function QuoteShow({
 function ClientLink({
     quote,
     money,
+    onSend,
 }: {
     quote: QuoteDetail;
     money: (v: string | number) => string;
+    onSend: (byEmail: boolean) => void;
 }) {
     const [copied, setCopied] = useState(false);
     const { deposit } = quote;
@@ -486,6 +508,19 @@ function ClientLink({
                         )}
                         {copied ? 'Copiado' : 'Copiar enlace'}
                     </Button>
+                    {quote.recipient_email && !paid && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            title={quote.recipient_email}
+                            onClick={() => onSend(true)}
+                        >
+                            <Mail className="size-4" />
+                            {quote.status === 'sent'
+                                ? 'Reenviar por correo'
+                                : 'Enviar por correo'}
+                        </Button>
+                    )}
                     {whatsapp && !paid && (
                         <Button variant="outline" size="sm" asChild>
                             <a
@@ -516,20 +551,24 @@ function ClientLink({
                         {quote.status === 'draft' &&
                             ' Quedará marcada como enviada.'}
                     </p>
-                    <Button
-                        size="sm"
-                        className="mt-3 w-full"
-                        onClick={() =>
-                            router.post(
-                                share(quote.id).url,
-                                {},
-                                { preserveScroll: true },
-                            )
-                        }
-                    >
-                        <Link2 className="size-4" />
-                        Generar enlace
-                    </Button>
+                    <div className="mt-3 grid gap-2">
+                        {quote.recipient_email && (
+                            <Button size="sm" onClick={() => onSend(true)}>
+                                <Mail className="size-4" />
+                                Enviar por correo
+                            </Button>
+                        )}
+                        <Button
+                            size="sm"
+                            variant={
+                                quote.recipient_email ? 'outline' : 'default'
+                            }
+                            onClick={() => onSend(false)}
+                        >
+                            <Link2 className="size-4" />
+                            Solo generar enlace
+                        </Button>
+                    </div>
                 </>
             )}
         </div>

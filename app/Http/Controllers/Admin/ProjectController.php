@@ -91,7 +91,7 @@ class ProjectController extends Controller
     public function show(Project $project): Response
     {
         $project->load([
-            'client:id,name,deleted_at',
+            'client:id,name,email,deleted_at',
             'tasks' => fn ($q) => $q->with('assignee:id,name')->withCount('comments')->orderBy('sort_order')->orderBy('id'),
             'milestones',
             'deliverables',
@@ -147,6 +147,7 @@ class ProjectController extends Controller
                 'online' => [
                     'enabled' => Wompi::configured(),
                     'sandbox' => Wompi::sandbox(),
+                    'client_email' => $project->client?->email,
                     'links' => $project->paymentLinks()->latest()->get()->map(fn (PaymentLink $l) => [
                         ...$l->only(['id', 'amount', 'currency', 'description', 'status', 'last_transaction_status', 'payment_method_type']),
                         'url' => route('site.pay', $l),

@@ -11,6 +11,7 @@ use App\Models\Plan;
 use App\Models\Quote;
 use App\Models\QuoteItem;
 use App\Models\TaxRate;
+use App\Notifications\QuoteForClient;
 use App\Support\Options;
 use App\Support\QuoteAcceptance;
 use App\Support\QuoteCalculator;
@@ -18,6 +19,7 @@ use App\Support\Settings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -107,7 +109,7 @@ class QuoteController extends Controller
 
     public function show(Quote $quote): Response
     {
-        $quote->load(['items.taxRate', 'client:id,name,phone,deleted_at', 'lead:id,name,company,phone,client_id,deleted_at', 'plan:id,name', 'project:id,name,quote_id,deleted_at', 'creator:id,name']);
+        $quote->load(['items.taxRate', 'client:id,name,phone,email,deleted_at', 'lead:id,name,company,phone,email,client_id,deleted_at', 'plan:id,name', 'project:id,name,quote_id,deleted_at', 'creator:id,name']);
 
         return Inertia::render('admin/quotes/show', [
             'quote' => $this->detail($quote),
@@ -244,15 +246,31 @@ class QuoteController extends Controller
      * Enlace para que el cliente vea la cotización, la acepte y pague el anticipo.
      * Compartirla la marca como enviada.
      */
-    public function share(Quote $quote): RedirectResponse
+    public function share(Request $request, Quote $quote): RedirectResponse
     {
+        abort_if(in_array($quote->status, ['rejected', 'expired'], true), 422, 'Esta cotización ya no está vigente.');
+
+        $quote->load(['client:id,name,email', 'lead:id,name,company,email']);
+        $email = $request->boolean('email') ? $quote->recipientEmail() : null;
+
+        if ($request->boolean('email') && $email === null) {
+            throw ValidationException::withMessages(['email' => 'El cliente no tiene correo registrado.']);
+        }
+
         $quote->ensurePublicToken();
 
         if ($quote->status === 'draft') {
             $quote->forceFill(['status' => 'sent', 'sent_at' => now()])->save();
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Enlace listo. Cópialo o envíalo por WhatsApp.']);
+        if ($email !== null) {
+            Notification::route('mail', $email)->notify(new QuoteForClient($quote));
+            $this->logOnRecipient($quote, "Cotización {$quote->number} enviada por correo a {$email}.");
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => $email !== null
+            ? "Cotización enviada a {$email}."
+            : 'Enlace listo. Cópialo o envíalo por WhatsApp.']);
 
         return back();
     }
@@ -391,6 +409,7 @@ class QuoteController extends Controller
             'past_validity' => $quote->isPastValidity(),
             'public_url' => $quote->public_token ? route('site.quote.view', $quote->public_token) : null,
             'recipient_phone' => $quote->client?->phone ?? $quote->lead?->phone,
+            'recipient_email' => $quote->recipientEmail(),
             'deposit' => [
                 'percent' => Quote::DEPOSIT_PERCENT,
                 'amount' => $quote->depositAmount(),

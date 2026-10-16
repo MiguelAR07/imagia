@@ -124,6 +124,8 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
                 Route::post('proyectos/{project}/links-de-pago', [PaymentLinkController::class, 'store'])
                     ->middleware('throttle:30,1')->name('links.store');
                 Route::patch('links-de-pago/{paymentLink:id}/anular', [PaymentLinkController::class, 'cancel'])->name('links.cancel');
+                Route::post('links-de-pago/{paymentLink:id}/correo', [PaymentLinkController::class, 'email'])
+                    ->middleware('throttle:10,1')->name('links.email');
             });
         });
 

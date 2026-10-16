@@ -5,6 +5,7 @@ import {
     Copy,
     CreditCard,
     ExternalLink,
+    Mail,
     MessageCircle,
     PackageCheck,
     Plus,
@@ -27,7 +28,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useClipboard } from '@/hooks/use-clipboard';
 import { formatDate, formatMoney } from '@/lib/format';
-import { cancel, store } from '@/routes/admin/finance/links';
+import { cancel, email, store } from '@/routes/admin/finance/links';
 import type { PaymentLinkRow, ProjectFinance } from '@/types';
 
 const STATUS: Record<PaymentLinkRow['status'], { label: string; tone: Tone }> =
@@ -192,6 +193,23 @@ export function OnlinePayments({
                                             ? 'Copiado'
                                             : 'Copiar'}
                                     </Button>
+                                    {canManage && online.client_email && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            title={`Enviar a ${online.client_email}`}
+                                            onClick={() =>
+                                                router.post(
+                                                    email(link.id).url,
+                                                    {},
+                                                    { preserveScroll: true },
+                                                )
+                                            }
+                                        >
+                                            <Mail className="size-4" />
+                                            Correo
+                                        </Button>
+                                    )}
                                     <Button variant="outline" size="sm" asChild>
                                         <a
                                             href={whatsapp(link)}
@@ -255,6 +273,7 @@ export function OnlinePayments({
                     projectId={projectId}
                     pending={pending}
                     balance={creating === 'balance'}
+                    clientEmail={online.client_email}
                     onClose={() => setCreating(null)}
                 />
             )}
@@ -266,11 +285,13 @@ function CreateLinkDialog({
     projectId,
     pending,
     balance,
+    clientEmail,
     onClose,
 }: {
     projectId: number;
     pending: number | null;
     balance: boolean;
+    clientEmail: string | null;
     onClose: () => void;
 }) {
     const form = useForm({
@@ -283,6 +304,7 @@ function CreateLinkDialog({
               ? 'Anticipo del 50 %'
               : '',
         kind: balance ? 'balance' : 'other',
+        send_email: clientEmail !== null,
     });
 
     const submit = (e: FormEvent) => {
@@ -346,6 +368,19 @@ function CreateLinkDialog({
                             required
                         />
                     </FormField>
+                    {clientEmail && (
+                        <label className="flex items-center gap-2 text-sm">
+                            <input
+                                type="checkbox"
+                                className="size-4 accent-current"
+                                checked={form.data.send_email}
+                                onChange={(e) =>
+                                    form.setData('send_email', e.target.checked)
+                                }
+                            />
+                            Enviárselo por correo a {clientEmail}
+                        </label>
+                    )}
                     <DialogFooter>
                         <Button
                             type="button"

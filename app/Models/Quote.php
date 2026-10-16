@@ -167,6 +167,11 @@ class Quote extends Model
         return $this->client?->name ?? ($this->lead ? ($this->lead->company ?: $this->lead->name) : null);
     }
 
+    public function recipientEmail(): ?string
+    {
+        return $this->client?->email ?: $this->lead?->email ?: null;
+    }
+
     /**
      * Siguiente consecutivo del año: COT-2026-001, COT-2026-002…
      * Se llama dentro de una transacción para evitar números repetidos.

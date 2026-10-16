@@ -8,8 +8,11 @@ use App\Models\Payment;
 use App\Models\PaymentLink;
 use App\Models\Project;
 use App\Models\Quote;
+use App\Notifications\PaymentLinkForClient;
+use App\Notifications\QuoteForClient;
 use Database\Seeders\BaseDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -146,16 +149,53 @@ class QuoteDepositTest extends TestCase
         $this->post(route('site.quote.accept', $quote->public_token))->assertStatus(422);
     }
 
-    public function test_the_final_balance_link_is_marked_as_balance()
+    public function test_the_final_balance_link_is_marked_as_balance_and_emailed_to_the_client()
     {
-        $project = Project::factory()->create(['agreed_amount' => 2000000, 'currency' => 'COP']);
+        Notification::fake();
+        $client = Client::factory()->create(['email' => 'cliente@ejemplo.com']);
+        $project = Project::factory()->create(['client_id' => $client->id, 'agreed_amount' => 2000000, 'currency' => 'COP']);
 
         $this->actingAs($this->admin())->post(route('admin.finance.links.store', $project), [
             'amount' => 2000000,
             'description' => 'Saldo final (entrega del proyecto)',
             'kind' => 'balance',
+            'send_email' => true,
         ])->assertSessionHasNoErrors();
 
-        $this->assertSame('balance', PaymentLink::query()->sole()->kind);
+        $link = PaymentLink::query()->sole();
+        $this->assertSame('balance', $link->kind);
+        Notification::assertSentOnDemand(PaymentLinkForClient::class, fn ($n, $c, $notifiable) => $notifiable->routes['mail'] === 'cliente@ejemplo.com'
+            && $n->link->is($link));
+
+        $this->actingAs($this->admin())->post(route('admin.finance.links.email', $link->id))->assertSessionHasNoErrors();
+        Notification::assertSentOnDemandTimes(PaymentLinkForClient::class, 2);
+    }
+
+    public function test_the_quote_can_be_emailed_to_the_client_with_its_private_link()
+    {
+        Notification::fake();
+        $quote = $this->quote(['client_id' => Client::factory()->create(['email' => 'cliente@ejemplo.com'])->id]);
+
+        $this->actingAs($this->admin())->post(route('admin.quotes.share', $quote), ['email' => true])->assertSessionHasNoErrors();
+
+        $quote->refresh();
+        $this->assertSame('sent', $quote->status);
+        Notification::assertSentOnDemand(QuoteForClient::class, function (QuoteForClient $n, $c, $notifiable) use ($quote) {
+            $mail = $n->toMail($notifiable);
+
+            return $notifiable->routes['mail'] === 'cliente@ejemplo.com'
+                && $mail->actionUrl === route('site.quote.view', $quote->public_token);
+        });
+    }
+
+    public function test_emailing_a_quote_without_an_email_shows_an_error()
+    {
+        Notification::fake();
+        $quote = $this->quote(['client_id' => Client::factory()->create(['email' => null])->id]);
+
+        $this->actingAs($this->admin())->post(route('admin.quotes.share', $quote), ['email' => true])->assertSessionHasErrors('email');
+
+        $this->assertSame('draft', $quote->refresh()->status);
+        Notification::assertNothingSent();
     }
 }

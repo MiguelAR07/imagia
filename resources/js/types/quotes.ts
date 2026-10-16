@@ -50,6 +50,7 @@ export type QuoteDetail = {
     past_validity: boolean;
     public_url: string | null;
     recipient_phone: string | null;
+    recipient_email: string | null;
     deposit: {
         percent: number;
         amount: number;
