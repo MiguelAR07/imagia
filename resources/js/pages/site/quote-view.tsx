@@ -79,7 +79,7 @@ export default function QuoteView({
             <Head title={seoTitle} />
 
             <section className="mx-auto grid max-w-6xl gap-8 px-5 py-12 md:px-8 lg:grid-cols-[1.6fr_1fr]">
-                <article className="rounded-3xl border bg-card p-6 md:p-10">
+                <article className="min-w-0 rounded-3xl border bg-card p-5 md:p-10">
                     <header className="flex flex-wrap items-start justify-between gap-4 border-b pb-6">
                         <div className="flex items-center gap-3">
                             <AppLogoIcon className="size-9" />
@@ -188,7 +188,7 @@ export default function QuoteView({
                     </div>
                 </article>
 
-                <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+                <aside className="min-w-0 space-y-4 lg:sticky lg:top-24 lg:self-start">
                     <div className="rounded-3xl border bg-card p-6">
                         {deposit.paid || quote.status === 'accepted' ? (
                             <div className="flex gap-3">
