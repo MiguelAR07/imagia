@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Cotización. Es una propuesta: nunca registra pagos.
@@ -130,6 +131,34 @@ class Quote extends Model
         return $this->valid_until !== null
             && $this->valid_until->isBefore(today())
             && in_array($this->status, self::EDITABLE_STATUSES, true);
+    }
+
+    /**
+     * @return HasMany<PaymentLink, $this>
+     */
+    public function paymentLinks(): HasMany
+    {
+        return $this->hasMany(PaymentLink::class);
+    }
+
+    /** Porcentaje del total que se paga al aceptar (el resto, al entregar). */
+    public const DEPOSIT_PERCENT = 50;
+
+    public function depositAmount(): float
+    {
+        return round((float) $this->total * self::DEPOSIT_PERCENT / 100);
+    }
+
+    /**
+     * Crea (una sola vez) el enlace para que el cliente vea y acepte la cotización.
+     */
+    public function ensurePublicToken(): string
+    {
+        if ($this->public_token === null) {
+            $this->forceFill(['public_token' => Str::random(32)])->save();
+        }
+
+        return $this->public_token;
     }
 
     /** A quién va dirigida: el cliente o, si aún no lo es, el prospecto. */

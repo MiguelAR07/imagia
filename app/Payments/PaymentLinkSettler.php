@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Models\PaymentLink;
 use App\Notifications\PaymentReceived;
 use App\Support\Notify;
+use App\Support\QuoteAcceptance;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -47,6 +48,15 @@ class PaymentLinkSettler
             if ($link->status === 'paid') {
                 return false;
             }
+
+            // Anticipo de una cotización: al pagarse, la cotización queda aceptada y nace el proyecto.
+            if ($link->project_id === null && $link->quote) {
+                $project = QuoteAcceptance::accept($link->quote, 'anticipo pagado en línea');
+                $link->forceFill(['project_id' => $project->id])->save();
+                $link->setRelation('project', $project);
+            }
+
+            abort_if($link->project_id === null, 422, 'El link de pago no tiene proyecto.');
 
             $payment = new Payment([
                 'amount' => $link->amount,

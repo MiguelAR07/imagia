@@ -8,11 +8,11 @@ use App\Models\Client;
 use App\Models\Lead;
 use App\Models\PipelineStage;
 use App\Models\Plan;
-use App\Models\Project;
 use App\Models\Quote;
 use App\Models\QuoteItem;
 use App\Models\TaxRate;
 use App\Support\Options;
+use App\Support\QuoteAcceptance;
 use App\Support\QuoteCalculator;
 use App\Support\Settings;
 use Illuminate\Http\RedirectResponse;
@@ -107,7 +107,7 @@ class QuoteController extends Controller
 
     public function show(Quote $quote): Response
     {
-        $quote->load(['items.taxRate', 'client:id,name,deleted_at', 'lead:id,name,company,deleted_at', 'plan:id,name', 'project:id,name,quote_id,deleted_at', 'creator:id,name']);
+        $quote->load(['items.taxRate', 'client:id,name,phone,deleted_at', 'lead:id,name,company,phone,client_id,deleted_at', 'plan:id,name', 'project:id,name,quote_id,deleted_at', 'creator:id,name']);
 
         return Inertia::render('admin/quotes/show', [
             'quote' => $this->detail($quote),
@@ -232,30 +232,29 @@ class QuoteController extends Controller
             return to_route('admin.projects.show', $quote->project);
         }
 
-        $clientId = $quote->client_id ?? $quote->lead?->client_id;
-
-        if ($clientId === null) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Esta cotización es para un prospecto. Conviértelo en cliente antes de crear el proyecto.']);
-
-            return back();
-        }
-
-        $project = Project::query()->create([
-            'client_id' => $clientId,
-            'quote_id' => $quote->id,
-            'name' => $quote->title,
-            'description' => $quote->scope,
-            'status' => 'planning',
-            'priority' => 'medium',
-            'agreed_amount' => $quote->total,
-            'currency' => $quote->currency,
-            'progress_mode' => 'tasks',
-        ]);
-        $project->logActivity('system', "Proyecto creado desde la cotización {$quote->number}.");
+        // Si la cotización es para un prospecto, se convierte en cliente automáticamente.
+        $project = QuoteAcceptance::projectFor($quote, "Proyecto creado desde la cotización {$quote->number}.");
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Proyecto creado con el valor de la cotización.']);
 
         return to_route('admin.projects.show', $project);
+    }
+
+    /**
+     * Enlace para que el cliente vea la cotización, la acepte y pague el anticipo.
+     * Compartirla la marca como enviada.
+     */
+    public function share(Quote $quote): RedirectResponse
+    {
+        $quote->ensurePublicToken();
+
+        if ($quote->status === 'draft') {
+            $quote->forceFill(['status' => 'sent', 'sent_at' => now()])->save();
+        }
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Enlace listo. Cópialo o envíalo por WhatsApp.']);
+
+        return back();
     }
 
     /** Vista para imprimir o guardar como PDF desde el navegador. */
@@ -390,6 +389,13 @@ class QuoteController extends Controller
             'project' => $quote->project?->only(['id', 'name']),
             'editable' => $quote->isEditable(),
             'past_validity' => $quote->isPastValidity(),
+            'public_url' => $quote->public_token ? route('site.quote.view', $quote->public_token) : null,
+            'recipient_phone' => $quote->client?->phone ?? $quote->lead?->phone,
+            'deposit' => [
+                'percent' => Quote::DEPOSIT_PERCENT,
+                'amount' => $quote->depositAmount(),
+                'link' => $quote->paymentLinks()->where('kind', 'deposit')->latest()->first()?->only(['status', 'paid_at', 'last_transaction_status']),
+            ],
             'items' => $quote->items->map(fn (QuoteItem $i) => [
                 'id' => $i->id,
                 'description' => $i->description,

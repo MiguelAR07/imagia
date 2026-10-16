@@ -29,6 +29,7 @@ class PaymentLinkController extends Controller
         $data = $request->validate([
             'amount' => ['required', 'numeric', 'min:1500', 'max:999999999'],
             'description' => ['required', 'string', 'max:120'],
+            'kind' => ['nullable', 'in:balance,other'],
         ], [
             'amount.min' => 'El valor mínimo para cobrar en línea es $1.500.',
         ]);
@@ -41,7 +42,7 @@ class PaymentLinkController extends Controller
         }
 
         $link = new PaymentLink(['amount' => round((float) $data['amount']), 'description' => $data['description']]);
-        $link->forceFill(['project_id' => $project->id, 'currency' => 'COP', 'created_by' => $request->user()->id])->save();
+        $link->forceFill(['project_id' => $project->id, 'kind' => $data['kind'] ?? 'other', 'currency' => 'COP', 'created_by' => $request->user()->id])->save();
 
         $project->logActivity('system', 'Link de pago creado por $'.number_format((float) $link->amount, 0, ',', '.')." COP · {$link->description}.");
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Link de pago creado. Cópialo y envíaselo al cliente.']);

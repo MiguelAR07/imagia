@@ -6,6 +6,7 @@ import {
     CreditCard,
     ExternalLink,
     MessageCircle,
+    PackageCheck,
     Plus,
 } from 'lucide-react';
 import type { FormEvent } from 'react';
@@ -61,7 +62,13 @@ export function OnlinePayments({
     pending: number | null;
     canManage: boolean;
 }) {
-    const [creating, setCreating] = useState(false);
+    const [creating, setCreating] = useState<'balance' | 'custom' | null>(null);
+    // Con un pago en línea ya recibido (p. ej. el anticipo), lo siguiente es el saldo final.
+    const balanceDue =
+        pending !== null &&
+        pending > 0 &&
+        online.links.some((l) => l.status === 'paid') &&
+        !online.links.some((l) => l.status === 'pending');
     const [, copy] = useClipboard();
     const [copied, setCopied] = useState<number | null>(null);
 
@@ -97,10 +104,25 @@ export function OnlinePayments({
                     </p>
                 </div>
                 {canManage && online.enabled && pending !== 0 && (
-                    <Button size="sm" onClick={() => setCreating(true)}>
-                        <Plus className="size-4" />
-                        Crear link de pago
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                        {balanceDue && (
+                            <Button
+                                size="sm"
+                                onClick={() => setCreating('balance')}
+                            >
+                                <PackageCheck className="size-4" />
+                                Cobrar saldo final
+                            </Button>
+                        )}
+                        <Button
+                            size="sm"
+                            variant={balanceDue ? 'outline' : 'default'}
+                            onClick={() => setCreating('custom')}
+                        >
+                            <Plus className="size-4" />
+                            {balanceDue ? 'Otro valor' : 'Crear link de pago'}
+                        </Button>
+                    </div>
                 )}
             </div>
 
@@ -232,7 +254,8 @@ export function OnlinePayments({
                 <CreateLinkDialog
                     projectId={projectId}
                     pending={pending}
-                    onClose={() => setCreating(false)}
+                    balance={creating === 'balance'}
+                    onClose={() => setCreating(null)}
                 />
             )}
         </section>
@@ -242,15 +265,24 @@ export function OnlinePayments({
 function CreateLinkDialog({
     projectId,
     pending,
+    balance,
     onClose,
 }: {
     projectId: number;
     pending: number | null;
+    balance: boolean;
     onClose: () => void;
 }) {
     const form = useForm({
-        amount: pending ? String(Math.round(pending / 2)) : '',
-        description: pending ? 'Anticipo del 50 %' : '',
+        amount: pending
+            ? String(Math.round(balance ? pending : pending / 2))
+            : '',
+        description: balance
+            ? 'Saldo final (entrega del proyecto)'
+            : pending
+              ? 'Anticipo del 50 %'
+              : '',
+        kind: balance ? 'balance' : 'other',
     });
 
     const submit = (e: FormEvent) => {
@@ -265,10 +297,13 @@ function CreateLinkDialog({
         <Dialog open onOpenChange={(o) => !o && onClose()}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Crear link de pago</DialogTitle>
+                    <DialogTitle>
+                        {balance ? 'Cobrar saldo final' : 'Crear link de pago'}
+                    </DialogTitle>
                     <DialogDescription>
-                        Envíaselo al cliente. Cuando pague, se registra solo en
-                        Finanzas.
+                        {balance
+                            ? 'Envíaselo al cliente al entregarle el proyecto. Cuando pague, el proyecto queda pagado y se registra solo en Finanzas.'
+                            : 'Envíaselo al cliente. Cuando pague, se registra solo en Finanzas.'}
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={submit} className="grid gap-4">

@@ -1,14 +1,18 @@
 import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
 import {
     Check,
+    CheckCircle2,
     Copy,
     FolderPlus,
+    Link2,
+    MessageCircle,
     Pencil,
     Printer,
     Send,
     Trash2,
     X,
 } from 'lucide-react';
+import { useState } from 'react';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { PageHeader } from '@/components/page-header';
 import { StatusBadge } from '@/components/status-badge';
@@ -16,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { useCan } from '@/hooks/use-can';
 import { formatDate, formatDateTime, formatMoney } from '@/lib/format';
 import { QUOTE_STATUS_TONE } from '@/lib/quote-labels';
+import { whatsappLink } from '@/lib/whatsapp';
 import { show as showClient } from '@/routes/admin/clients';
 import { show as showLead } from '@/routes/admin/leads';
 import { show as showProject } from '@/routes/admin/projects';
@@ -26,6 +31,7 @@ import {
     index,
     print,
     project as createProject,
+    share,
     show,
     status as setStatus,
 } from '@/routes/admin/quotes';
@@ -48,12 +54,6 @@ export default function QuoteShow({
             { status },
             { preserveScroll: true, onFinish: done },
         );
-    const needsClient =
-        quote.status === 'accepted' &&
-        !quote.project &&
-        !quote.client &&
-        !quote.lead?.client_id;
-
     setLayoutProps({
         breadcrumbs: [
             { title: 'Cotizaciones', href: index() },
@@ -202,12 +202,14 @@ export default function QuoteShow({
                         ) : (
                             <>
                                 <p className="flex-1 text-sm text-muted-foreground">
-                                    Aceptada el {formatDate(quote.accepted_at)}.{' '}
-                                    {needsClient
-                                        ? 'Para crear el proyecto, primero convierte el prospecto en cliente.'
-                                        : 'Crea el proyecto con el valor de esta cotización como valor contratado.'}
+                                    Aceptada el {formatDate(quote.accepted_at)}.
+                                    Crea el proyecto con el valor de esta
+                                    cotización como valor contratado
+                                    {quote.client
+                                        ? '.'
+                                        : ' (el prospecto pasa a ser cliente).'}
                                 </p>
-                                {can('proyectos.gestionar') && !needsClient && (
+                                {can('proyectos.gestionar') && (
                                     <Button
                                         onClick={() =>
                                             router.post(
@@ -322,6 +324,7 @@ export default function QuoteShow({
                     </div>
 
                     <aside className="space-y-4">
+                        <ClientLink quote={quote} money={money} />
                         <div className="rounded-2xl border bg-card p-5">
                             <dl className="space-y-2 text-sm">
                                 <Row
@@ -393,6 +396,143 @@ export default function QuoteShow({
                 </div>
             </div>
         </>
+    );
+}
+
+/**
+ * Enlace privado para que el cliente vea la cotización y la acepte pagando el anticipo.
+ */
+function ClientLink({
+    quote,
+    money,
+}: {
+    quote: QuoteDetail;
+    money: (v: string | number) => string;
+}) {
+    const [copied, setCopied] = useState(false);
+    const { deposit } = quote;
+    const paid = deposit.link?.status === 'paid';
+    const closed = ['rejected', 'expired'].includes(quote.status);
+
+    if (closed && !quote.public_url) {
+        return null;
+    }
+
+    const copy = async () => {
+        if (!quote.public_url) {
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(quote.public_url);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            window.prompt('Copia el enlace:', quote.public_url);
+        }
+    };
+
+    const whatsapp = quote.public_url
+        ? (whatsappLink(
+              quote.recipient_phone,
+              `Hola${quote.recipient ? ` ${quote.recipient}` : ''}, te comparto la propuesta ${quote.number} (${quote.title}). Aquí la puedes revisar y, si estás de acuerdo, aceptarla pagando el anticipo del ${deposit.percent} %: ${quote.public_url}`,
+          ) ??
+          `https://wa.me/?text=${encodeURIComponent(`Te comparto la propuesta ${quote.number}: ${quote.public_url}`)}`)
+        : null;
+
+    return (
+        <div className="rounded-2xl border bg-card p-5">
+            <p className="flex items-center gap-2 text-sm font-semibold">
+                <Link2 className="size-4 text-brand-cyan" />
+                Enlace para el cliente
+            </p>
+
+            <div className="mt-3 rounded-xl bg-muted/60 p-3 text-sm">
+                <p className="flex justify-between gap-2">
+                    <span className="text-muted-foreground">
+                        Anticipo {deposit.percent} %
+                    </span>
+                    <span className="font-mono tabular-nums">
+                        {money(deposit.amount)}
+                    </span>
+                </p>
+                <p className="mt-1 flex items-center gap-1.5 text-xs">
+                    {paid ? (
+                        <>
+                            <CheckCircle2 className="size-3.5 text-success" />
+                            Pagado {formatDate(deposit.link?.paid_at ?? null)}
+                        </>
+                    ) : deposit.link ? (
+                        <span className="text-muted-foreground">
+                            El cliente abrió el pago
+                            {deposit.link.last_transaction_status &&
+                                ` · último intento: ${deposit.link.last_transaction_status.toLowerCase()}`}
+                        </span>
+                    ) : (
+                        <span className="text-muted-foreground">
+                            Aún sin pagar
+                        </span>
+                    )}
+                </p>
+            </div>
+
+            {quote.public_url ? (
+                <div className="mt-3 grid gap-2">
+                    <Button variant="outline" size="sm" onClick={copy}>
+                        {copied ? (
+                            <Check className="size-4" />
+                        ) : (
+                            <Copy className="size-4" />
+                        )}
+                        {copied ? 'Copiado' : 'Copiar enlace'}
+                    </Button>
+                    {whatsapp && !paid && (
+                        <Button variant="outline" size="sm" asChild>
+                            <a
+                                href={whatsapp}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <MessageCircle className="size-4" />
+                                Enviar por WhatsApp
+                            </a>
+                        </Button>
+                    )}
+                    <a
+                        href={quote.public_url}
+                        target="_blank"
+                        rel="noopener"
+                        className="text-center text-xs text-muted-foreground hover:underline"
+                    >
+                        Ver como el cliente
+                    </a>
+                </div>
+            ) : (
+                <>
+                    <p className="mt-3 text-xs text-muted-foreground">
+                        El cliente revisa la propuesta, la acepta y paga el
+                        anticipo en línea. Al pagar se crea el proyecto
+                        automáticamente.
+                        {quote.status === 'draft' &&
+                            ' Quedará marcada como enviada.'}
+                    </p>
+                    <Button
+                        size="sm"
+                        className="mt-3 w-full"
+                        onClick={() =>
+                            router.post(
+                                share(quote.id).url,
+                                {},
+                                { preserveScroll: true },
+                            )
+                        }
+                    >
+                        <Link2 className="size-4" />
+                        Generar enlace
+                    </Button>
+                </>
+            )}
+        </div>
     );
 }
 

@@ -4,8 +4,28 @@ import { whatsappLink } from '@/lib/whatsapp';
 import { projects } from '@/routes/site';
 import type { SiteProps } from '@/types';
 
+const NEXT_STEPS = [
+    {
+        title: 'Te contactamos',
+        text: 'Aclaramos lo que necesitas, sin compromiso.',
+    },
+    {
+        title: 'Recibes tu propuesta',
+        text: 'Con alcance, valor y tiempos, en un enlace privado.',
+    },
+    {
+        title: 'Aceptas con el 50 %',
+        text: 'Pagas el anticipo en línea y empezamos.',
+    },
+    {
+        title: 'Entrega y saldo',
+        text: 'El otro 50 % se paga cuando te entregamos.',
+    },
+];
+
 /** Confirmación. Solo se muestra si el servidor guardó la solicitud. */
 export default function Thanks({
+    kind,
     name,
     seoTitle,
 }: SiteProps & { kind: string; name: string | null }) {
@@ -27,6 +47,28 @@ export default function Thanks({
                     Recibimos tu solicitud y la estamos revisando. Te
                     responderemos por el correo o el teléfono que nos dejaste.
                 </p>
+                {kind === 'cotizacion' && (
+                    <ol className="grid w-full gap-3 pt-2 text-left text-sm sm:grid-cols-2">
+                        {NEXT_STEPS.map((step, i) => (
+                            <li
+                                key={step.title}
+                                className="flex gap-3 rounded-2xl border bg-card p-4"
+                            >
+                                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-foreground text-xs font-bold text-background">
+                                    {i + 1}
+                                </span>
+                                <span>
+                                    <span className="block font-semibold">
+                                        {step.title}
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                        {step.text}
+                                    </span>
+                                </span>
+                            </li>
+                        ))}
+                    </ol>
+                )}
                 <div className="flex flex-wrap justify-center gap-3 pt-2">
                     {wa && (
                         <a

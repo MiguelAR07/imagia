@@ -6,14 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\LeadRequest;
 use App\Models\Activity;
 use App\Models\ChatSession;
-use App\Models\Client;
 use App\Models\Lead;
 use App\Models\PipelineStage;
 use App\Models\User;
 use App\Support\Options;
+use App\Support\QuoteAcceptance;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -155,32 +154,7 @@ class LeadController extends Controller
             return to_route('admin.clients.show', $lead->client_id);
         }
 
-        $client = DB::transaction(function () use ($request, $lead) {
-            $client = new Client([
-                'type' => filled($lead->company) ? 'company' : 'person',
-                'name' => $lead->company ?: $lead->name,
-                'email' => $lead->email,
-                'phone' => $lead->phone,
-                'status' => 'active',
-            ]);
-            $client->created_by = $request->user()->id;
-            $client->save();
-
-            if (filled($lead->company)) {
-                $client->contacts()->create([
-                    'name' => $lead->name,
-                    'email' => $lead->email,
-                    'phone' => $lead->phone,
-                    'is_primary' => true,
-                ]);
-            }
-
-            $lead->forceFill(['client_id' => $client->id])->save();
-            $lead->logActivity('system', "Convertido en el cliente «{$client->name}».");
-            $client->logActivity('system', "Creado a partir del prospecto «{$lead->name}».");
-
-            return $client;
-        });
+        $client = QuoteAcceptance::clientFromLead($lead, $request->user()->id);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Cliente creado a partir del prospecto.']);
 

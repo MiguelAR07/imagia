@@ -223,6 +223,7 @@ Route::middleware(['auth', 'verified', 'permission:'.Permissions::PANEL_ACCESS])
             Route::put('{quote}', [QuoteController::class, 'update'])->name('update');
             Route::patch('{quote}/estado', [QuoteController::class, 'updateStatus'])->name('status');
             Route::post('{quote}/duplicar', [QuoteController::class, 'duplicate'])->name('duplicate');
+            Route::post('{quote}/compartir', [QuoteController::class, 'share'])->name('share');
             Route::post('{quote}/proyecto', [QuoteController::class, 'createProject'])
                 ->middleware('permission:proyectos.gestionar')->name('project');
             Route::delete('{quote}', [QuoteController::class, 'destroy'])->name('destroy');

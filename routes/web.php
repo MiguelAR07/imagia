@@ -5,9 +5,14 @@ use App\Http\Controllers\Site\AssistantController;
 use App\Http\Controllers\Site\LeadFormController;
 use App\Http\Controllers\Site\PageController;
 use App\Http\Controllers\Site\PayController;
+use App\Http\Controllers\Site\QuoteViewController;
 use App\Http\Controllers\Site\SitemapController;
 use App\Http\Controllers\WompiWebhookController;
 use Illuminate\Support\Facades\Route;
+
+/* Cotización vista por el cliente: la acepta pagando el anticipo. */
+Route::get('cotizacion/{token}', [QuoteViewController::class, 'show'])->name('site.quote.view');
+Route::post('cotizacion/{token}/aceptar', [QuoteViewController::class, 'accept'])->middleware('throttle:10,1')->name('site.quote.accept');
 
 /* Pagos en línea: página del link de pago, regreso desde Wompi y eventos de Wompi. */
 Route::get('pagar/{paymentLink}', [PayController::class, 'show'])->name('site.pay');
@@ -53,6 +58,7 @@ Route::get('robots.txt', fn () => response(implode("\n", [
     'Disallow: /gracias',
     'Disallow: /asistente',
     'Disallow: /pagar',
+    'Disallow: /cotizacion',
     'Disallow: /webhooks',
     '',
     'Sitemap: '.route('sitemap'),

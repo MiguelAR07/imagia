@@ -58,6 +58,16 @@ class PaymentLink extends Model
     }
 
     /**
+     * Cotización de origen (anticipo pagado antes de que exista el proyecto).
+     *
+     * @return BelongsTo<Quote, $this>
+     */
+    public function quote(): BelongsTo
+    {
+        return $this->belongsTo(Quote::class)->withTrashed();
+    }
+
+    /**
      * @return BelongsTo<Payment, $this>
      */
     public function payment(): BelongsTo

@@ -48,6 +48,17 @@ export type QuoteDetail = {
     project: { id: number; name: string } | null;
     editable: boolean;
     past_validity: boolean;
+    public_url: string | null;
+    recipient_phone: string | null;
+    deposit: {
+        percent: number;
+        amount: number;
+        link: {
+            status: 'pending' | 'paid' | 'cancelled';
+            paid_at: string | null;
+            last_transaction_status: string | null;
+        } | null;
+    };
     items: QuoteLine[];
 };
 

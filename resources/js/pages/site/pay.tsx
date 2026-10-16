@@ -23,6 +23,7 @@ type Props = SiteProps & {
         project: string | null;
         client: string | null;
         paid_at: string | null;
+        kind: string;
     };
     checkout: {
         url: string;
@@ -94,6 +95,15 @@ export default function Pay({ link, checkout, seoTitle, site }: Props) {
                                     {link.paid_at &&
                                         ` el ${formatDate(link.paid_at)}`}
                                     . Gracias.
+                                    {link.kind === 'deposit' && (
+                                        <span className="mt-2 block text-muted-foreground">
+                                            Tu proyecto quedó confirmado.
+                                            Empezamos a trabajar y te
+                                            contactaremos para los primeros
+                                            pasos. El saldo restante se paga
+                                            cuando te entreguemos el proyecto.
+                                        </span>
+                                    )}
                                 </p>
                             </div>
                         )}

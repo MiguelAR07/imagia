@@ -16,7 +16,7 @@ class PayController extends SiteController
 {
     public function show(PaymentLink $paymentLink): Response
     {
-        $paymentLink->load('project.client:id,name');
+        $paymentLink->load(['project.client:id,name', 'quote.client:id,name', 'quote.lead:id,name,company']);
         $payable = $paymentLink->status === 'pending' && Wompi::configured();
 
         return $this->page('site/pay', [
@@ -26,8 +26,9 @@ class PayController extends SiteController
                 'currency' => $paymentLink->currency,
                 'status' => $paymentLink->status,
                 'last_transaction_status' => $paymentLink->last_transaction_status,
-                'project' => $paymentLink->project?->name,
-                'client' => $paymentLink->project?->client?->name,
+                'project' => $paymentLink->project?->name ?? $paymentLink->quote?->title,
+                'client' => $paymentLink->project?->client?->name ?? $paymentLink->quote?->recipientName(),
+                'kind' => $paymentLink->kind,
                 'paid_at' => $paymentLink->paid_at?->toIso8601String(),
             ],
             'checkout' => $payable ? [
