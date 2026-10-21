@@ -18,3 +18,6 @@
 /scripts
 /public/hot
 /public/storage
+/bootstrap/cache/*.php
+/.vercel/.env*
+/.env.local
