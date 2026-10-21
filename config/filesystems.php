@@ -64,6 +64,14 @@ return [
             'report' => false,
         ],
 
+        // Archivos dentro de la base de datos (tabla media_files).
+        'db' => [
+            'driver' => 'database',
+            'table' => 'media_files',
+            'throw' => false,
+            'report' => false,
+        ],
+
         // Cloudflare R2 (compatible con S3).
         'r2' => [
             'driver' => 's3',

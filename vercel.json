@@ -30,6 +30,6 @@
         "CACHE_STORE": "database",
         "QUEUE_CONNECTION": "sync",
         "DB_CONNECTION": "pgsql",
-        "MEDIA_DISK": "r2"
+        "MEDIA_DISK": "db"
     }
 }

@@ -11,17 +11,21 @@ use App\Models\Plan;
 use App\Models\Project;
 use App\Models\Service;
 use App\Models\User;
+use App\Support\DatabaseFilesystemAdapter;
 use App\Support\Permissions;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use League\Flysystem\Filesystem;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -46,6 +50,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        // Disco «db»: archivos subidos guardados en la base de datos (hosting sin disco, como Vercel).
+        Storage::extend('database', function ($app, array $config) {
+            $adapter = new DatabaseFilesystemAdapter(DB::connection($config['connection'] ?? null), $config['table'] ?? 'media_files');
+
+            return new FilesystemAdapter(new Filesystem($adapter, $config), $adapter, $config);
+        });
 
         // Nombres cortos y estables para las relaciones polimórficas (historial, archivos, FAQ).
         Relation::morphMap([
