@@ -42,9 +42,9 @@ class PortfolioMediaController extends Controller
 
     private function stream(string $path, bool $public): StreamedResponse
     {
-        abort_unless(Storage::disk('local')->exists($path), 404);
+        abort_unless(Storage::disk(config('filesystems.media'))->exists($path), 404);
 
-        return Storage::disk('local')->response($path, null, [
+        return Storage::disk(config('filesystems.media'))->response($path, null, [
             'Cache-Control' => $public ? 'public, max-age=86400' : 'private, no-store',
             'X-Content-Type-Options' => 'nosniff',
         ]);

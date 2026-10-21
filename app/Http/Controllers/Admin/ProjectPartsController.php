@@ -105,10 +105,10 @@ class ProjectPartsController extends Controller
         ]);
 
         $upload = $request->file('file');
-        $path = $upload->store("projects/{$project->id}", 'local');
+        $path = $upload->store("projects/{$project->id}", config('filesystems.media'));
 
         $project->files()->create([
-            'disk' => 'local',
+            'disk' => config('filesystems.media'),
             'path' => $path,
             'original_name' => mb_substr($upload->getClientOriginalName(), 0, 255),
             'mime_type' => $upload->getMimeType(),

@@ -19,7 +19,7 @@ class PortfolioImage extends Model
 {
     protected static function booted(): void
     {
-        static::deleted(fn (PortfolioImage $image) => Storage::disk('local')->delete($image->path));
+        static::deleted(fn (PortfolioImage $image) => Storage::disk(config('filesystems.media'))->delete($image->path));
     }
 
     /**

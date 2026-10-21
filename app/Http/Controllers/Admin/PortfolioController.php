@@ -184,10 +184,10 @@ class PortfolioController extends Controller
         $request->validate(['image' => self::IMAGE_RULES], $this->imageMessages());
 
         $old = $item->cover_path;
-        $item->update(['cover_path' => $request->file('image')->store("portfolio/{$item->id}", 'local')]);
+        $item->update(['cover_path' => $request->file('image')->store("portfolio/{$item->id}", config('filesystems.media'))]);
 
         if ($old) {
-            Storage::disk('local')->delete($old);
+            Storage::disk(config('filesystems.media'))->delete($old);
         }
 
         return back();
@@ -204,7 +204,7 @@ class PortfolioController extends Controller
         $order = (int) $item->images()->max('sort_order');
         foreach ($request->file('images') as $file) {
             $item->images()->create([
-                'path' => $file->store("portfolio/{$item->id}", 'local'),
+                'path' => $file->store("portfolio/{$item->id}", config('filesystems.media')),
                 'part' => $data['part'] ?? null,
                 'sort_order' => ++$order,
             ]);

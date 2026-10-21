@@ -1,0 +1,20 @@
+# Lo que NO se sube a Vercel. Las dependencias de PHP las instala Vercel;
+# el diseño (public/build) se compila en el computador y sí se sube.
+/node_modules
+/vendor
+/.env
+/.env.*
+/database/*.sqlite
+/database/*.sqlite-journal
+/storage/app/private/*
+/storage/app/public/*
+/storage/logs/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/tests
+/.git
+/.phpunit.cache
+/scripts
+/public/hot
+/public/storage
