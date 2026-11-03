@@ -10,7 +10,7 @@ type Line = {
     slug: string;
     /** Como la gente lo busca y lo oye nombrar. */
     term: string;
-    /** Qué significa la palabra, en español. */
+    /** Qué es, comparado con algo que todos conocen. */
     meaning: string;
     /** Qué es, en una sola frase. */
     what: string;
@@ -26,7 +26,7 @@ const LINES: Line[] = [
     {
         slug: 'landing-pages',
         term: 'Landing page',
-        meaning: 'página de aterrizaje',
+        meaning: 'como un volante, pero en internet',
         what: 'Una sola página para vender un producto o una promoción y recibir mensajes por WhatsApp.',
         idealFor: 'Emprendimientos y campañas en redes',
         preview: <LandingPreview />,
@@ -34,7 +34,7 @@ const LINES: Line[] = [
     {
         slug: 'paginas-web',
         term: 'Página web',
-        meaning: 'tu negocio en internet',
+        meaning: 'tu local abierto 24 horas en internet',
         what: 'Varias secciones —inicio, servicios, galería y contacto— para que te encuentren y confíen en ti.',
         idealFor: 'Negocios que quieren verse profesionales',
         preview: <WebsitePreview />,
@@ -42,7 +42,7 @@ const LINES: Line[] = [
     {
         slug: 'software-de-gestion',
         term: 'Software',
-        meaning: 'programa o sistema a tu medida',
+        meaning: 'el cuaderno de tu negocio, pero en el computador',
         what: 'Un programa para manejar citas, clientes, inventario y pagos desde el celular o el computador.',
         idealFor: 'Negocios que ya no dan abasto con cuaderno y Excel',
         preview: <SoftwarePreview />,
@@ -50,7 +50,7 @@ const LINES: Line[] = [
     {
         slug: 'automatizacion-empresarial',
         term: 'Automatización',
-        meaning: 'tareas que se hacen solas',
+        meaning: 'un ayudante que trabaja solo',
         what: 'Respuestas, recordatorios, cobros y reportes que pasan solos, sin que tengas que estar pendiente.',
         idealFor: 'Quien responde lo mismo todo el día',
         preview: <AutomationPreview />,
@@ -95,7 +95,7 @@ export function WhatWeBuild({
                                         {l.term}
                                     </h3>
                                     <p className="mt-1 text-sm text-brand-cyan">
-                                        En español: {l.meaning}
+                                        = {l.meaning}
                                     </p>
                                 </div>
                                 <p className="text-muted-foreground">
