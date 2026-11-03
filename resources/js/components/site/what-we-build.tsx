@@ -1,6 +1,5 @@
 import { Link } from '@inertiajs/react';
 import { ArrowRight } from 'lucide-react';
-import type { ReactNode } from 'react';
 import { planPriceLabel } from '@/lib/plan-price';
 import { service as serviceRoute } from '@/routes/site';
 import type { PublicPlan, PublicService } from '@/types';
@@ -15,12 +14,13 @@ type Line = {
     /** Qué es, en una sola frase. */
     what: string;
     idealFor: string;
-    preview: ReactNode;
+    /** Captura de un proyecto real del portafolio. */
+    example: { image: string; project: string; url: string };
 };
 
 /**
  * Las cuatro cosas que construimos, explicadas para quien no es del medio:
- * un dibujo de cómo se ve, la palabra con su traducción y una sola frase.
+ * un proyecto real de ejemplo, la palabra con una comparación sencilla y una sola frase.
  */
 const LINES: Line[] = [
     {
@@ -29,7 +29,11 @@ const LINES: Line[] = [
         meaning: 'como un volante, pero en internet',
         what: 'Una sola página para vender un producto o una promoción y recibir mensajes por WhatsApp.',
         idealFor: 'Emprendimientos y campañas en redes',
-        preview: <LandingPreview />,
+        example: {
+            image: '/img/ejemplos/landing-natural-love.webp',
+            project: 'Natural Love',
+            url: 'naturallove.com.co',
+        },
     },
     {
         slug: 'paginas-web',
@@ -37,7 +41,11 @@ const LINES: Line[] = [
         meaning: 'tu local abierto 24 horas en internet',
         what: 'Varias secciones —inicio, servicios, galería y contacto— para que te encuentren y confíen en ti.',
         idealFor: 'Negocios que quieren verse profesionales',
-        preview: <WebsitePreview />,
+        example: {
+            image: '/img/ejemplos/web-glamping.webp',
+            project: 'Glamping Los Bosques',
+            url: 'glampinglosbosques.com',
+        },
     },
     {
         slug: 'software-de-gestion',
@@ -45,15 +53,23 @@ const LINES: Line[] = [
         meaning: 'el cuaderno de tu negocio, pero en el computador',
         what: 'Un programa para manejar citas, clientes, inventario y pagos desde el celular o el computador.',
         idealFor: 'Negocios que ya no dan abasto con cuaderno y Excel',
-        preview: <SoftwarePreview />,
+        example: {
+            image: '/img/ejemplos/software-glamping.webp',
+            project: 'Glamping Los Bosques · panel',
+            url: 'glampinglosbosques.com/admin',
+        },
     },
     {
         slug: 'automatizacion-empresarial',
         term: 'Automatización',
         meaning: 'un ayudante que trabaja solo',
-        what: 'Respuestas, recordatorios, cobros y reportes que pasan solos, sin que tengas que estar pendiente.',
+        what: 'Respuestas, recordatorios, reservas y cobros que pasan solos, sin que tengas que estar pendiente.',
         idealFor: 'Quien responde lo mismo todo el día',
-        preview: <AutomationPreview />,
+        example: {
+            image: '/img/ejemplos/automatizacion-zona-elite.webp',
+            project: 'Zona Élite · reservas solas',
+            url: 'zonaelitemarinilla.com',
+        },
     },
 ];
 
@@ -84,14 +100,35 @@ export function WhatWeBuild({
                             href={serviceRoute(l.slug)}
                             className="group flex h-full flex-col overflow-hidden rounded-3xl border bg-card transition-colors hover:border-brand-cyan/60"
                         >
-                            <div className="relative aspect-[16/10] overflow-hidden border-b bg-[radial-gradient(120%_90%_at_50%_0%,rgba(59,91,255,.22),transparent_70%)] p-6">
-                                <div className="h-full transition-transform duration-500 group-hover:scale-[1.03]">
-                                    {l.preview}
+                            <div className="relative overflow-hidden border-b bg-[radial-gradient(120%_90%_at_50%_0%,rgba(59,91,255,.22),transparent_70%)] px-6 pt-6">
+                                <div className="overflow-hidden rounded-t-xl bg-white shadow-[0_20px_50px_-20px_rgba(0,0,0,.7)] transition-transform duration-500 group-hover:-translate-y-1">
+                                    <div className="flex items-center gap-1.5 border-b border-slate-200 bg-slate-100 px-3 py-2">
+                                        <i className="size-2 rounded-full bg-[#ff5f57]" />
+                                        <i className="size-2 rounded-full bg-[#febc2e]" />
+                                        <i className="size-2 rounded-full bg-[#28c840]" />
+                                        <span className="ml-2 truncate rounded bg-white px-2 py-0.5 text-[10px] text-slate-500">
+                                            {l.example.url}
+                                        </span>
+                                    </div>
+                                    <img
+                                        src={l.example.image}
+                                        alt={`Ejemplo real de ${l.term}: ${l.example.project}`}
+                                        loading="lazy"
+                                        width={1200}
+                                        height={750}
+                                        className="aspect-[16/10] w-full object-cover object-top"
+                                    />
                                 </div>
+                                <span className="absolute top-9 right-9 rounded-full bg-success px-2.5 py-1 text-[11px] font-semibold text-white shadow">
+                                    Ejemplo real
+                                </span>
                             </div>
                             <div className="flex flex-1 flex-col gap-3 p-6">
                                 <div>
-                                    <h3 className="text-2xl font-black tracking-tight">
+                                    <p className="text-xs font-medium text-muted-foreground">
+                                        {l.example.project}
+                                    </p>
+                                    <h3 className="mt-1 text-2xl font-black tracking-tight">
                                         {l.term}
                                     </h3>
                                     <p className="mt-1 text-sm text-brand-cyan">
@@ -121,7 +158,7 @@ export function WhatWeBuild({
                                     )}
                                 </div>
                                 <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-cyan">
-                                    Ver ejemplos y precios
+                                    Ver más y precios
                                     <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
                                 </span>
                             </div>
@@ -130,143 +167,5 @@ export function WhatWeBuild({
                 );
             })}
         </ul>
-    );
-}
-
-/* ---------- Dibujos de cómo se ve cada cosa (decorativos) ---------- */
-
-function Browser({ children, url }: { children: ReactNode; url: string }) {
-    return (
-        <div
-            aria-hidden="true"
-            className="flex h-full flex-col overflow-hidden rounded-xl bg-white text-[#0f172a] shadow-[0_20px_50px_-20px_rgba(0,0,0,.7)]"
-        >
-            <div className="flex items-center gap-1.5 border-b border-slate-200 bg-slate-100 px-3 py-2">
-                <i className="size-2 rounded-full bg-[#ff5f57]" />
-                <i className="size-2 rounded-full bg-[#febc2e]" />
-                <i className="size-2 rounded-full bg-[#28c840]" />
-                <span className="ml-2 truncate rounded bg-white px-2 py-0.5 text-[10px] text-slate-500">
-                    {url}
-                </span>
-            </div>
-            <div className="relative min-h-0 flex-1">{children}</div>
-        </div>
-    );
-}
-
-function LandingPreview() {
-    return (
-        <Browser url="tupromo.com">
-            <div className="flex h-full flex-col items-center justify-center gap-2 bg-gradient-to-b from-orange-50 to-white px-4 text-center">
-                <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[9px] font-bold text-orange-600">
-                    PROMO -30 %
-                </span>
-                <p className="text-sm leading-tight font-black sm:text-base">
-                    Tu producto estrella
-                </p>
-                <div className="h-1.5 w-2/3 rounded bg-slate-200" />
-                <span className="mt-1 rounded-full bg-[#25D366] px-4 py-1.5 text-[10px] font-bold text-white shadow">
-                    Pedir por WhatsApp
-                </span>
-                <p className="text-[8px] text-slate-400">
-                    Una sola página · un solo objetivo
-                </p>
-            </div>
-        </Browser>
-    );
-}
-
-function WebsitePreview() {
-    return (
-        <Browser url="tunegocio.com">
-            <div className="flex h-full flex-col">
-                <div className="flex items-center justify-between px-3 py-1.5 text-[8px] font-semibold text-slate-500">
-                    <b className="text-[10px] text-[#0f172a]">TU NEGOCIO</b>
-                    <span className="flex gap-2">
-                        <span>Inicio</span>
-                        <span>Servicios</span>
-                        <span>Galería</span>
-                        <span>Contacto</span>
-                    </span>
-                </div>
-                <div className="mx-3 flex-1 rounded-md bg-gradient-to-br from-[#3b5bff] to-[#22d3ee] p-2">
-                    <div className="h-2 w-1/2 rounded bg-white/80" />
-                    <div className="mt-1 h-1.5 w-1/3 rounded bg-white/50" />
-                </div>
-                <div className="m-3 grid grid-cols-3 gap-1.5">
-                    {[0, 1, 2].map((i) => (
-                        <div key={i} className="h-6 rounded bg-slate-100" />
-                    ))}
-                </div>
-            </div>
-        </Browser>
-    );
-}
-
-function SoftwarePreview() {
-    return (
-        <Browser url="tunegocio.com/panel">
-            <div className="flex h-full bg-[#0b0f1a] text-white">
-                <div className="w-1/5 space-y-1.5 border-r border-white/10 p-2">
-                    {[0, 1, 2, 3].map((i) => (
-                        <div
-                            key={i}
-                            className={`h-1.5 rounded ${i === 0 ? 'bg-[#22d3ee]' : 'bg-white/15'}`}
-                        />
-                    ))}
-                </div>
-                <div className="flex-1 space-y-2 p-2">
-                    <div className="grid grid-cols-3 gap-1.5">
-                        {['Citas', 'Clientes', 'Ventas'].map((k, i) => (
-                            <div key={k} className="rounded bg-white/5 p-1.5">
-                                <p className="text-[7px] text-white/50">{k}</p>
-                                <p className="text-[11px] font-bold text-[#22d3ee]">
-                                    {[24, 186, '$4,8M'][i]}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex h-16 items-end gap-1 rounded bg-white/5 p-1.5">
-                        {[30, 45, 38, 60, 52, 75, 90].map((h, i) => (
-                            <div
-                                key={i}
-                                style={{ height: `${h}%` }}
-                                className="flex-1 rounded-sm bg-gradient-to-t from-[#3b5bff] to-[#22d3ee]"
-                            />
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </Browser>
-    );
-}
-
-function AutomationPreview() {
-    return (
-        <div
-            aria-hidden="true"
-            className="flex h-full items-center justify-center gap-2 text-[10px] font-semibold sm:gap-3"
-        >
-            {[
-                ['💬', 'Llega un mensaje'],
-                ['🤖', 'Se responde solo'],
-                ['📅', 'Agenda la cita'],
-                ['✅', 'Cobra y avisa'],
-            ].map(([icon, label], i, all) => (
-                <div key={label} className="flex items-center gap-2 sm:gap-3">
-                    <div className="flex w-16 flex-col items-center gap-1.5 text-center sm:w-20">
-                        <span className="flex size-10 items-center justify-center rounded-2xl bg-card text-lg ring-1 ring-brand-cyan/50 sm:size-12">
-                            {icon}
-                        </span>
-                        <span className="leading-tight text-muted-foreground">
-                            {label}
-                        </span>
-                    </div>
-                    {i < all.length - 1 && (
-                        <ArrowRight className="mb-5 size-3.5 shrink-0 text-brand-cyan" />
-                    )}
-                </div>
-            ))}
-        </div>
     );
 }
