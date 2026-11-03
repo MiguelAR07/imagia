@@ -24,7 +24,6 @@ class PageController extends SiteController
             // Si no hay destacados, se muestran los más recientes publicados.
             'projects' => $featured->isNotEmpty() ? $featured : PublicCatalog::projects(limit: 3),
             'plans' => PublicCatalog::plans(),
-            'process' => PublicCatalog::PROCESS,
         ], '', "{$brand['descriptor']}. {$brand['tagline']} Webs, apps y automatización a la medida de tu negocio.");
     }
 
@@ -32,6 +31,7 @@ class PageController extends SiteController
     {
         return $this->page('site/services', [
             'services' => PublicCatalog::services(),
+            'plans' => PublicCatalog::plans(),
         ], 'Servicios', 'Landing pages, páginas web, software de gestión, paneles administrativos, automatización e inteligencia artificial.');
     }
 

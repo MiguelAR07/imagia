@@ -23,7 +23,7 @@ export function HeroVisual() {
     return (
         <div
             aria-hidden="true"
-            className="relative mx-auto aspect-square w-full max-w-[460px]"
+            className="relative mx-auto hidden aspect-square w-full max-w-[460px] lg:block"
         >
             <div className="absolute inset-[10%] rounded-full bg-[radial-gradient(circle,rgba(59,91,255,.45),rgba(34,211,238,.1)_45%,transparent_70%)] blur-2xl" />
             <div className="absolute inset-[6%] rounded-full border border-dashed border-brand-blue/25 motion-safe:animate-[spin_60s_linear_infinite]" />
